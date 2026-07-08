@@ -14,7 +14,7 @@ DEPLOY_ENV="${DEPLOY_ENV:-production}"
 
 docker run --rm \
     -v "$PWD/src:/workspace/dist" \
-    ghcr-swacli:latest \
+    ghcr.io/soerenkoehler-org/docker-swacli:main \
     deploy \
         --env "$DEPLOY_ENV" \
         --deployment-token "$DEPLOYMENT_TOKEN" \
