@@ -12,7 +12,7 @@ printf "\033[92mToken acquired.\033[0m\n"
 
 DEPLOY_ENV="${DEPLOY_ENV:-production}"
 
-docker run --rm -it \
+docker run --rm \
     -v "$PWD/src:/workspace/dist" \
     ghcr-swacli:latest \
     deploy \
