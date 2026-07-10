@@ -7,5 +7,9 @@
     "settings": {
         "telemetry.editStats.enabled": false,
         "telemetry.feedback.enabled": false,
+        "files.exclude": {
+            "**/.git": true,
+            "**/.terraform*": true,
+        }
     }
 }
