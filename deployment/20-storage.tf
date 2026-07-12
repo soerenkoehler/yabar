@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_storage_account" "sharepass" {
-  name                = "${vars.project_prefix}"
+  name                = "${variable.project_prefix}"
   resource_group_name = azurerm_resource_group.sharepass.name
   location            = azurerm_resource_group.sharepass.location
 
