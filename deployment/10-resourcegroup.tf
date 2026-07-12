@@ -3,6 +3,6 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "sharepass" {
-  name     = "${variable.project_resource_group}"
+  name     = "${var.project_resource_group}"
   location = "westeurope"
 }
