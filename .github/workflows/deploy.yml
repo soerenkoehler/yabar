@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - '**'
+      - dev
 
 permissions:
   id-token: write
@@ -33,7 +33,8 @@ jobs:
             -backend-config="resource_group_name=${{ vars.TFSTATE_RESOURCE_GROUP }}" \
             -backend-config="storage_account_name=${{ vars.TFSTATE_STORAGE_ACCOUNT }}" \
             -backend-config="container_name=tfstate" \
-            -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"
+            -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"\
+            -backend-config="use_azuread_auth=true"
 
       - name: TF Plan
         working-directory: ./deployment
