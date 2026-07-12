@@ -18,8 +18,11 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v6
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v4
+      - uses: opentofu/setup-opentofu@v2
+        with:
+          tofu_version: 1.12.0
 
       - name: TF Initialize
         run: |
