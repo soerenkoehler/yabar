@@ -9,17 +9,40 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: "true"
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout project
+        uses: actions/checkout@v6
 
-      - name: Deploy to Static Web App
-        env:
-          DEPLOYMENT_TOKEN: ${{ secrets.DEPLOYMENT_TOKEN }}
-          DEPLOY_ENV: >-
-            ${{
-              case(
-                github.ref_name == 'main', 'production',
-                'preview'
-              )
-            }}
-        run: ./deploy.sh
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: TF Initialize
+        run: |
+          tofu init \
+            -backend-config="resource_group_name=${{ vars.TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"
+
+      - name: TF Plan
+        run: |
+          tofu plan \
+            -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
+            -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}"
+
+      # - name: Deploy to Static Web App
+      #   env:
+      #     DEPLOYMENT_TOKEN: ${{ secrets.DEPLOYMENT_TOKEN }}
+      #     DEPLOY_ENV: >-
+      #       ${{
+      #         case(
+      #           github.ref_name == 'main', 'production',
+      #           'preview'
+      #         )
+      #       }}
+      #   run: ./deployment/deploy.sh
