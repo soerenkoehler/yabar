@@ -3,9 +3,9 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_storage_account" "sharepass" {
-  name                = "${var.project_prefix}"
-  resource_group_name = azurerm_resource_group.sharepass.name
-  location            = azurerm_resource_group.sharepass.location
+  name                = "${var.project_global_prefix}"
+  resource_group_name = data.azurerm_resource_group.sharepass.name
+  location            = data.azurerm_resource_group.sharepass.location
 
   account_tier             = "Standard"
   account_replication_type = "LRS"

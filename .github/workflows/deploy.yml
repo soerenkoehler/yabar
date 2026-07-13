@@ -41,6 +41,7 @@ jobs:
         working-directory: ./deployment
         run: |
           tofu plan \
+            -var="project_global_prefix=${{ vars.PROJECT_GLOBAL_PREFIX }}" \
             -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
             -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
             -out=./plan.out
