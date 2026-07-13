@@ -42,7 +42,15 @@ jobs:
         run: |
           tofu plan \
             -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
-            -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}"
+            -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
+            -out=./plan.out
+
+      - name: TF Apply
+        working-directory: ./deployment
+        run: |
+          tofu apply \
+            -auto-approve \
+            ./plan.out
 
       # - name: Deploy to Static Web App
       #   env:
