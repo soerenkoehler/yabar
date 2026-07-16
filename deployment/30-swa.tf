@@ -11,17 +11,17 @@ resource "azurerm_static_web_app" "sharepass" {
   sku_size = "Free"
 }
 
-# # --------------------------------------------------------------------------
-# # Outputs
-# # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Outputs
+# --------------------------------------------------------------------------
 
-# output "static_web_app_name" {
-#   value = azurerm_static_web_app.sharepass.name
-# }
+output "swa_name" {
+  value = azurerm_static_web_app.sharepass.name
+}
 
-# output "default_host_name" {
-#   value = azurerm_static_web_app.sharepass.default_host_name
-# }
+output "swa_host_name" {
+  value = azurerm_static_web_app.sharepass.default_host_name
+}
 
 output "swa_deployment_token" {
   value     = azurerm_static_web_app.sharepass.api_key
