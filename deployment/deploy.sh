@@ -11,6 +11,7 @@ fi
 printf "\033[92mToken acquired.\033[0m\n"
 
 DEPLOY_ENV="${DEPLOY_ENV:-production}"
+DEPLOYMENT_TOKEN=$(terraform output -raw swa_deployment_token)
 
 docker run --rm \
     -v "$PWD/src:/workspace/dist" \

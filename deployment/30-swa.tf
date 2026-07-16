@@ -23,7 +23,7 @@ resource "azurerm_static_web_app" "sharepass" {
 #   value = azurerm_static_web_app.sharepass.default_host_name
 # }
 
-# output "api_key" {
-#   value     = azurerm_static_web_app.sharepass.api_key
-#   sensitive = true
-# }
+output "swa_deployment_token" {
+  value     = azurerm_static_web_app.sharepass.api_key
+  sensitive = true
+}

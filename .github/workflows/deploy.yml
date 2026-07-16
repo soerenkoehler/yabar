@@ -53,14 +53,13 @@ jobs:
             -auto-approve \
             ./plan.out
 
-      # - name: Deploy to Static Web App
-      #   env:
-      #     DEPLOYMENT_TOKEN: ${{ secrets.DEPLOYMENT_TOKEN }}
-      #     DEPLOY_ENV: >-
-      #       ${{
-      #         case(
-      #           github.ref_name == 'main', 'production',
-      #           'preview'
-      #         )
-      #       }}
-      #   run: ./deployment/deploy.sh
+      - name: Deploy to Static Web App
+        env:
+          DEPLOY_ENV: >-
+            ${{
+              case(
+                github.ref_name == 'main', 'production',
+                'preview'
+              )
+            }}
+        run: ./deployment/deploy.sh
