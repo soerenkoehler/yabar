@@ -1,8 +1,64 @@
-<html>
-    <head>
-        <title>WIP</title>
-    </head>
-    <body>
-        <h1>Work in Progress v3</h1>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWA Queue Writer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 0.5rem; max-width: 400px; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+        #statusMessage { margin-top: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Submit Message to Queue</h1>
+
+    <form id="queueForm">
+        <div class="form-group">
+            <label for="messageInput">Message Payload:</label>
+            <input type="text" id="messageInput" required placeholder="Enter text here...">
+        </div>
+        <button type="submit">Submit to Queue</button>
+    </form>
+
+    <div id="statusMessage"></div>
+
+    <script>
+        document.getElementById('queueForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const statusMessage = document.getElementById('statusMessage');
+
+            statusMessage.style.color = 'black';
+            statusMessage.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('/api/writeToQueue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ value: messageInput.value })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    statusMessage.style.color = 'green';
+                    statusMessage.textContent = `Success: ${result.message}`;
+                    messageInput.value = '';
+                } else {
+                    const errorText = await response.text();
+                    statusMessage.style.color = 'red';
+                    statusMessage.textContent = `Error (${response.status}): ${errorText}`;
+                }
+            } catch (error) {
+                statusMessage.style.color = 'red';
+                statusMessage.textContent = `Network error occurred: ${error.message}`;
+            }
+        });
+    </script>
+</body>
 </html>
