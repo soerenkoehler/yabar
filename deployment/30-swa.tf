@@ -4,8 +4,8 @@
 
 resource "azurerm_static_web_app" "sharepass" {
   name                = "swa-sharepass"
-  resource_group_name = azurerm_resource_group.sharepass.name
-  location            = azurerm_resource_group.sharepass.location
+  resource_group_name = data.azurerm_resource_group.sharepass.name
+  location            = data.azurerm_resource_group.sharepass.location
 
   sku_tier = "Free"
   sku_size = "Free"
