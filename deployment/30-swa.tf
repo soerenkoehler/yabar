@@ -2,21 +2,14 @@
 # Static Web App (Free tier)
 # --------------------------------------------------------------------------
 
-# resource "azurerm_static_web_app" "sharepass" {
-#   name                = "swa-sharepass"
-#   resource_group_name = azurerm_resource_group.sharepass.name
-#   location            = azurerm_resource_group.sharepass.location
+resource "azurerm_static_web_app" "sharepass" {
+  name                = "swa-sharepass"
+  resource_group_name = azurerm_resource_group.sharepass.name
+  location            = azurerm_resource_group.sharepass.location
 
-#   sku_tier = "Free"
-#   sku_size = "Free"
-
-#   # Optional: link the app to a repository for CI/CD-driven deployment.
-#   # repository_url, repository_branch, and repository_token must be
-#   # supplied together if this is used.
-#   # repository_url    = "https://github.com/<owner>/<repo>"
-#   # repository_branch = "main"
-#   # repository_token  = var.repository_token
-# }
+  sku_tier = "Free"
+  sku_size = "Free"
+}
 
 # # --------------------------------------------------------------------------
 # # Outputs
