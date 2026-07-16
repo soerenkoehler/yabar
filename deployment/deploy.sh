@@ -15,7 +15,7 @@ if [[ -z "${DEPLOYMENT_TOKEN:-}" ]]; then
 fi
 
 docker run --rm \
-    -v "$PWD/src:/workspace/dist" \
+    -v "$PWD/../src:/workspace/dist" \
     ghcr.io/soerenkoehler-org/docker-swacli:main \
     deploy \
         --env "$DEPLOY_ENV" \

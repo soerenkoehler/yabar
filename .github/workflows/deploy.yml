@@ -18,6 +18,10 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_USE_OIDC: "true"
+    defaults:
+      run:
+        working-directory: ./deployment
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v6
@@ -28,7 +32,6 @@ jobs:
           tofu_version: 1.12.0
 
       - name: TF Initialize
-        working-directory: ./deployment
         run: |
           tofu init \
             -backend-config="resource_group_name=${{ vars.TFSTATE_RESOURCE_GROUP }}" \
@@ -38,7 +41,6 @@ jobs:
             -backend-config="use_azuread_auth=true"
 
       - name: TF Plan
-        working-directory: ./deployment
         run: |
           tofu plan \
             -var="project_global_prefix=${{ vars.PROJECT_GLOBAL_PREFIX }}" \
@@ -47,7 +49,6 @@ jobs:
             -out=./plan.out
 
       - name: TF Apply
-        working-directory: ./deployment
         run: |
           tofu apply \
             -auto-approve \
@@ -62,4 +63,4 @@ jobs:
                 'preview'
               )
             }}
-        run: ./deployment/deploy.sh
+        run: ./deploy.sh
