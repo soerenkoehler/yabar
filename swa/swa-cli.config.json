@@ -1,0 +1,12 @@
+{
+  "configurations": {
+    "swa-sharepass": {
+      "appLocation": "web",
+      "apiLocation": "api",
+      "outputLocation": ".",
+      "apiLanguage": "node",
+      "apiVersion": "22",
+      "apiBuildCommand": "npm run build --if-present"
+    }
+  }
+}

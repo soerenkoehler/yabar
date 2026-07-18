@@ -28,17 +28,17 @@ app.http('writeToQueue', {
             }
 
             // Initialize the Queue Service Client
-            const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
-            const queueName = 'my-storage-queue';
-            const queueClient = queueServiceClient.getQueueClient(queueName);
+            // const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
+            // const queueName = 'my-storage-queue';
+            // const queueClient = queueServiceClient.getQueueClient(queueName);
 
             // Ensure the target queue exists prior to sending the message
-            await queueClient.createIfNotExists();
+            // await queueClient.createIfNotExists();
 
             // Base64 encode the message to prevent XML/JSON serialization issues in downstream services
-            const base64Message = Buffer.from(payload).toString('base64');
+            // const base64Message = Buffer.from(payload).toString('base64');
 
-            await queueClient.sendMessage(base64Message);
+            // await queueClient.sendMessage(base64Message);
 
             return {
                 status: 200,
