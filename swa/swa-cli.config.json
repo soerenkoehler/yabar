@@ -2,11 +2,8 @@
   "configurations": {
     "sharepass": {
       "appLocation": "web",
-      "apiLocation": "api",
-      "outputLocation": ".",
-      "apiLanguage": "node",
-      "apiVersion": "22",
-      "apiBuildCommand": "npm install"
+      "apiLocation": null,
+      "outputLocation": "."
     }
   }
 }
