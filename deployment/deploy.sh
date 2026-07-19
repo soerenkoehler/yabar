@@ -11,14 +11,12 @@ DEPLOYMENT_TOKEN=$(
 if [[ -z "${DEPLOYMENT_TOKEN:-}" ]]; then
     printf "\033[93mread deployment token from azure\033[0m\n"
     DEPLOYMENT_TOKEN=$(
-        az staticwebapp secrets list --name swa-sharepass \
+        az staticwebapp secrets list --name "$PROJECT_PREFIX" \
         | jq -r '.properties.apiKey'
     )
 else
     printf "\033[93muse deployment token from tofu\033[0m\n"
 fi
-
-printf "+++%s+++\n" "$(base64 <<<"$DEPLOYMENT_TOKEN")"
 
 docker run --rm \
     -v "$PWD/../swa:/workspace" \

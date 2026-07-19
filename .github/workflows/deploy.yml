@@ -63,4 +63,5 @@ jobs:
                 'preview'
               )
             }}
+          PROJECT_PREFIX: ${{ vars.PROJECT_PREFIX }}
         run: ./deploy.sh
