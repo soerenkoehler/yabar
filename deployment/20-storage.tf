@@ -15,6 +15,7 @@ resource "azurerm_storage_account" "sharepass" {
 
   shared_access_key_enabled = false
   public_network_access_enabled = true
+  default_to_oauth_authentication = true
 }
 
 # --------------------------------------------------------------------------
