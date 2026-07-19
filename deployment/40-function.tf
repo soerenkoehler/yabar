@@ -1,5 +1,5 @@
 resource "azurerm_service_plan" "sharepass" {
-  name                   = "sharepass"
+  name                   = var.project_prefix
   resource_group_name    = data.azurerm_resource_group.sharepass.name
   location               = data.azurerm_resource_group.sharepass.location
   sku_name               = "FC1"
@@ -12,7 +12,7 @@ locals {
 }
 
 resource "azurerm_function_app_flex_consumption" "functionApps" {
-  name                        = "sharepass"
+  name                        = var.project_global_prefix
   resource_group_name         = data.azurerm_resource_group.sharepass.name
   location                    = data.azurerm_resource_group.sharepass.location
   service_plan_id             = azurerm_service_plan.sharepass.id

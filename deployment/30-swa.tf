@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_static_web_app" "sharepass" {
-  name                = "swa-sharepass"
+  name                = var.project_prefix
   resource_group_name = data.azurerm_resource_group.sharepass.name
   location            = data.azurerm_resource_group.sharepass.location
 

@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_storage_account" "sharepass" {
-  name                = "${var.project_global_prefix}"
+  name                = var.project_global_prefix
   resource_group_name = data.azurerm_resource_group.sharepass.name
   location            = data.azurerm_resource_group.sharepass.location
 
@@ -22,7 +22,7 @@ resource "azurerm_storage_account" "sharepass" {
 # --------------------------------------------------------------------------
 
 resource "azurerm_storage_queue" "sharepass" {
-  name               = "sharepass-queue"
+  name               = "queue"
   storage_account_id = azurerm_storage_account.sharepass.id
 }
 
