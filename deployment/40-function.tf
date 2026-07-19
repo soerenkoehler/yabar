@@ -29,13 +29,9 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
   }
 
   site_config {
-    # XXX maybe
-    # application_insights_connection_string = azurerm_application_insights.appInsights.connection_string
   }
 
   app_settings = {
-    "AzureWebJobsStorage" = "" //workaround until https://github.com/hashicorp/terraform-provider-azurerm/pull/29099 gets released
-    "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
   }
 }
 

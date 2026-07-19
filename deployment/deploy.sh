@@ -21,6 +21,12 @@ fi
 docker run --rm \
     -v "$PWD/../swa:/workspace" \
     ghcr.io/soerenkoehler-org/docker-swacli:main \
+    build \
+        --verbose silly
+
+docker run --rm \
+    -v "$PWD/../swa:/workspace" \
+    ghcr.io/soerenkoehler-org/docker-swacli:main \
     deploy \
         --verbose silly \
         --env "$DEPLOY_ENV" \
