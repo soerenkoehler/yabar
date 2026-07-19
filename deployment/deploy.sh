@@ -3,8 +3,9 @@ set -euo pipefail
 
 DEPLOY_ENV="${DEPLOY_ENV:-preview}"
 DEPLOYMENT_TOKEN=$(
-    tofu output -json 2>/dev/null || true \
-    | jq -r '.swa_deployment_token.value // ""'
+    tofu output -json 2>/dev/null \
+    | jq -r '.swa_deployment_token.value // ""' \
+    || true
 )
 
 if [[ -z "${DEPLOYMENT_TOKEN:-}" ]]; then
