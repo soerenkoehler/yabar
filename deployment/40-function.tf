@@ -8,7 +8,7 @@ resource "azurerm_service_plan" "sharepass" {
 }
 
 locals {
-  blobStorageAndContainer = "${azurerm_storage_account.storageAccount.primary_blob_endpoint}deploymentpackage"
+  blobStorageAndContainer = "${azurerm_storage_account.sharepass.primary_blob_endpoint}deploymentpackage"
 }
 
 resource "azurerm_function_app_flex_consumption" "functionApps" {
