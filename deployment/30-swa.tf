@@ -9,6 +9,11 @@ resource "azurerm_static_web_app" "sharepass" {
 
   sku_tier = "Free"
   sku_size = "Free"
+
+  app_settings = {
+    "AZURE_STORAGE_CONNECTION_STRING" = azurerm_storage_account.sharepass.primary_connection_string
+    "TARGET_QUEUE_NAME"               = azurerm_storage_queue.sharepass.name
+  }
 }
 
 # --------------------------------------------------------------------------
