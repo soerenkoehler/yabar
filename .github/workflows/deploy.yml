@@ -26,6 +26,14 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v6
 
+      - name: 'Node Setup'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install SWA Cli
+        run: npm install -g @azure/static-web-apps-cli
+
       - name: TF setup
         uses: opentofu/setup-opentofu@v2
         with:
@@ -39,6 +47,7 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"\
             -backend-config="use_azuread_auth=true"
+        working-directory: ./tf
 
       - name: TF Plan
         run: |
@@ -47,22 +56,28 @@ jobs:
             -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
             -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
             -out=./plan.out
+        working-directory: ./tf
 
       - name: TF Apply
         run: |
           tofu apply \
             -auto-approve \
             ./plan.out
+        working-directory: ./tf
+
+      - name: Build Functions
+        run: npm install
+        working-directory: ./swa/api
 
       - name: Log in to Azure via OIDC
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run Azure Functions Zip Deploy
-        uses: Azure/functions-action@v2
+        uses: azure/functions-action@v1
         with:
           app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
           package: '../swa/api'
@@ -76,5 +91,13 @@ jobs:
                 'preview'
               )
             }}
-          PROJECT_PREFIX: ${{ vars.PROJECT_PREFIX }}
-        run: ./deploy.sh
+        run: |
+          DEPLOY_ENV="${DEPLOY_ENV:-preview}"
+          DEPLOYMENT_TOKEN=$(
+              tofu output -json 2>/dev/null \
+              | jq -r '.swa_deployment_token.value // ""'
+          )
+          swa deploy \
+            --verbose silly \
+            --env "$DEPLOY_ENV" \
+            --deployment-token "$DEPLOYMENT_TOKEN" \
