@@ -18,9 +18,13 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_USE_OIDC: "true"
-    defaults:
-      run:
-        working-directory: ./deployment
+      DEPLOY_ENV: >-
+        ${{
+          case(
+            github.ref_name == 'main', 'production',
+            'preview'
+          )
+        }}
 
     steps:
       - name: Checkout project
@@ -83,14 +87,6 @@ jobs:
           package: '../swa/api'
 
       - name: Deploy to Static Web App
-        env:
-          DEPLOY_ENV: >-
-            ${{
-              case(
-                github.ref_name == 'main', 'production',
-                'preview'
-              )
-            }}
         run: |
           DEPLOY_ENV="${DEPLOY_ENV:-preview}"
           DEPLOYMENT_TOKEN=$(
