@@ -1,5 +1,4 @@
 const { app } = require('@azure/functions');
-const { QueueServiceClient } = require('@azure/storage-queue');
 
 app.http('helloWorld', {
     methods: ['GET'],
