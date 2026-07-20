@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install SWA Cli
-        run: npm install -g @azure/static-web-apps-cli
+      # - name: Install SWA Cli
+      #   run: npm install -g @azure/static-web-apps-cli
 
       - name: TF setup
         uses: opentofu/setup-opentofu@v2
@@ -85,16 +85,16 @@ jobs:
         with:
           app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
           package: './swa/api'
-          remote-build: true
+          # remote-build: true
 
-      - name: Deploy to Static Web App
-        run: |
-          DEPLOY_ENV="${DEPLOY_ENV:-preview}"
-          DEPLOYMENT_TOKEN=$(
-              tofu output -json 2>/dev/null \
-              | jq -r '.swa_deployment_token.value // ""'
-          )
-          swa deploy \
-            --verbose silly \
-            --env "$DEPLOY_ENV" \
-            --deployment-token "$DEPLOYMENT_TOKEN" \
+      # - name: Deploy to Static Web App
+      #   run: |
+      #     DEPLOY_ENV="${DEPLOY_ENV:-preview}"
+      #     DEPLOYMENT_TOKEN=$(
+      #         tofu output -json 2>/dev/null \
+      #         | jq -r '.swa_deployment_token.value // ""'
+      #     )
+      #     swa deploy \
+      #       --verbose silly \
+      #       --env "$DEPLOY_ENV" \
+      #       --deployment-token "$DEPLOYMENT_TOKEN" \
