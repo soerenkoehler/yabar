@@ -32,6 +32,8 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
   }
 
   app_settings = {
+    ENABLE_ORYX_BUILD              = true
+    SCM_DO_BUILD_DURING_DEPLOYMENT = true
   }
 }
 
