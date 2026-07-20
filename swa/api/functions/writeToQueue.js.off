@@ -18,14 +18,14 @@ app.http('writeToQueue', {
                 };
             }
 
-            const connectionString = process.env.QueueConnectionString;
-            if (!connectionString) {
-                context.error('QueueConnectionString environment variable is not defined.');
-                return {
-                    status: 500,
-                    body: 'Internal server configuration error.'
-                };
-            }
+            // const connectionString = process.env.QueueConnectionString;
+            // if (!connectionString) {
+            //     context.error('QueueConnectionString environment variable is not defined.');
+            //     return {
+            //         status: 500,
+            //         body: 'Internal server configuration error.'
+            //     };
+            // }
 
             // Initialize the Queue Service Client
             // const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
