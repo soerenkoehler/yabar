@@ -28,13 +28,9 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
     type = "SystemAssigned"
   }
 
-  site_config {
-  }
+  site_config {}
 
-  app_settings = {
-    ENABLE_ORYX_BUILD              = true
-    SCM_DO_BUILD_DURING_DEPLOYMENT = true
-  }
+  app_settings = {}
 }
 
 resource "azurerm_role_assignment" "storage_roleassignment" {

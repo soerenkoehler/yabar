@@ -85,6 +85,7 @@ jobs:
         with:
           app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
           package: './swa/api'
+          remote-build: true
 
       - name: Deploy to Static Web App
         run: |
