@@ -14,6 +14,7 @@ resource "azurerm_storage_account" "sharepass" {
   min_tls_version = "TLS1_2"
 
   shared_access_key_enabled = false
+  allow_nested_items_to_be_public = false
   public_network_access_enabled = true
   default_to_oauth_authentication = true
 }
@@ -33,6 +34,6 @@ resource "azurerm_storage_queue" "sharepass" {
 
 resource "azurerm_storage_container" "storageContainer" {
   name                  = "deploymentpackage"
-  storage_account_id  = azurerm_storage_account.sharepass.id
+  storage_account_id    = azurerm_storage_account.sharepass.id
   container_access_type = "private"
 }
