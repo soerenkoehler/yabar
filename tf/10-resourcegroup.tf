@@ -3,5 +3,5 @@
 # --------------------------------------------------------------------------
 
 data "azurerm_resource_group" "sharepass" {
-  name     = "${var.project_resource_group}"
+  name = "${var.project_resource_group}"
 }
