@@ -4,6 +4,7 @@
   "description": "Azure Static Web Apps Managed Function API",
   "main": "functions/*.js",
   "dependencies": {
-    "@azure/functions": "^4.0.0"
+    "@azure/functions": "^4.0.0",
+    "@azure/storage-queue": "^12.0.0"
   }
 }
