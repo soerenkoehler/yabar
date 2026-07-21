@@ -30,12 +30,14 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
 
   site_config {}
 
-  app_settings = {}
+  app_settings = {
+    "AzureWebJobsStorage__accountName" = azurerm_storage_account.storageAccount.name
+  }
 }
 
 resource "azurerm_role_assignment" "storage_roleassignment" {
   scope = azurerm_storage_account.sharepass.id
-  role_definition_name = "Storage Blob Data Owner"
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id = azurerm_function_app_flex_consumption.functionApps.identity.0.principal_id
   principal_type = "ServicePrincipal"
 }
