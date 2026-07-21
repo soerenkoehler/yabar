@@ -31,7 +31,7 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
   site_config {}
 
   app_settings = {
-    "AzureWebJobsStorage__accountName" = azurerm_storage_account.storageAccount.name
+    "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
   }
 }
 
