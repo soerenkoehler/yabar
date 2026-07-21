@@ -41,3 +41,10 @@ resource "azurerm_role_assignment" "storage_roleassignment" {
   principal_id = azurerm_function_app_flex_consumption.functionApps.identity.0.principal_id
   principal_type = "ServicePrincipal"
 }
+
+resource "azurerm_role_assignment" "storage_roleassignment" {
+  scope = azurerm_storage_account.sharepass.id
+  role_definition_name = "Storage Account Contributor"
+  principal_id = azurerm_function_app_flex_consumption.functionApps.identity.0.principal_id
+  principal_type = "ServicePrincipal"
+}
