@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SWA Queue Writer</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body { font-family: sans-serif; margin: 2rem; }
         .form-group { margin-bottom: 1rem; }
@@ -14,6 +15,18 @@
     </style>
 </head>
 <body>
+    <div id="g_id_onload"
+        data-client_id="220042544586-rli4uf6decdhcbkuknv3vb5b6uhh065n.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+    <script>
+        async function handleCredentialResponse(response) {
+            console.log(response);
+            // const idToken = response.credential;
+        }
+    </script>
+
     <h1>Submit Message to Queue</h1>
 
     <form id="queueForm">
