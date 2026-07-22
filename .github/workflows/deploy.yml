@@ -100,5 +100,5 @@ jobs:
           swa deploy \
             --verbose silly \
             --env "$DEPLOY_ENV" \
-            --deployment-token "$DEPLOYMENT_TOKEN" \
+            --deployment-token "$DEPLOYMENT_TOKEN"
           popd
