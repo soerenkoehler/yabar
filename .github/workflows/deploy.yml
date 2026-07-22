@@ -88,13 +88,17 @@ jobs:
 
       - name: Deploy to Static Web App
         run: |
+          pushd ./tf
           DEPLOY_ENV="${DEPLOY_ENV:-preview}"
           DEPLOYMENT_TOKEN=$(
             tofu output -json 2>/dev/null \
             | jq -r '.swa_deployment_token.value // ""'
           )
+          popd
+
+          pushd ./swa
           swa deploy \
             --verbose silly \
             --env "$DEPLOY_ENV" \
             --deployment-token "$DEPLOYMENT_TOKEN" \
-        working-directory: ./swa
+          popd
