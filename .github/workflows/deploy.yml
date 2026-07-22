@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: 22
 
-      # - name: Install SWA Cli
-      #   run: npm install -g @azure/static-web-apps-cli
+      - name: Install SWA Cli
+        run: npm install -g @azure/static-web-apps-cli
 
       - name: TF setup
         uses: opentofu/setup-opentofu@v2
