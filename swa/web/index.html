@@ -20,11 +20,71 @@
         data-callback="handleCredentialResponse">
     </div>
     <div class="g_id_signin" data-type="standard"></div>
+
+    <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
+    <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
+
     <script>
-        async function handleCredentialResponse(response) {
-            console.log(response);
-            // const idToken = response.credential;
+        let currentUserHint = null;
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                return JSON.parse(jsonPayload);
+            } catch {
+                return null;
+            }
         }
+
+        function setLoggedIn(username, userHint) {
+            const authStatus = document.getElementById('authStatus');
+            const logoutButton = document.getElementById('logoutButton');
+            authStatus.textContent = `logged in as ${username}`;
+            logoutButton.style.display = 'inline-block';
+            currentUserHint = userHint || null;
+        }
+
+        function setLoggedOut() {
+            const authStatus = document.getElementById('authStatus');
+            const logoutButton = document.getElementById('logoutButton');
+            authStatus.textContent = 'Not logged in';
+            logoutButton.style.display = 'none';
+            currentUserHint = null;
+        }
+
+        async function handleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+            if (!payload) {
+                setLoggedOut();
+                return;
+            }
+
+            const username = payload.name || payload.email || payload.sub || 'unknown user';
+            const userHint = payload.email || payload.sub;
+            setLoggedIn(username, userHint);
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            if (currentUserHint && window.google?.accounts?.id?.revoke) {
+                google.accounts.id.revoke(currentUserHint, () => {
+                    setLoggedOut();
+                });
+            } else {
+                setLoggedOut();
+            }
+
+            // Optional: avoid silent auto-select on next load
+            if (window.google?.accounts?.id?.disableAutoSelect) {
+                google.accounts.id.disableAutoSelect();
+            }
+        });
     </script>
 
     <h1>Submit Message to Queue</h1>
