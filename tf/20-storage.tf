@@ -32,7 +32,7 @@ resource "azurerm_storage_queue" "sharepass" {
 # Function App Deployment Container
 # --------------------------------------------------------------------------
 
-resource "azurerm_storage_container" "storageContainer" {
+resource "azurerm_storage_container" "apiDeployment" {
   name                  = "deploymentpackage"
   storage_account_id    = azurerm_storage_account.sharepass.id
   container_access_type = "private"

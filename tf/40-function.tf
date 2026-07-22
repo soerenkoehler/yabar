@@ -1,4 +1,8 @@
-resource "azurerm_service_plan" "sharepass" {
+# --------------------------------------------------------------------------
+# Function App
+# --------------------------------------------------------------------------
+
+resource "azurerm_service_plan" "api" {
   name                   = var.project_prefix
   resource_group_name    = data.azurerm_resource_group.sharepass.name
   location               = data.azurerm_resource_group.sharepass.location
@@ -8,14 +12,14 @@ resource "azurerm_service_plan" "sharepass" {
 }
 
 locals {
-  blobStorageAndContainer = "${azurerm_storage_account.sharepass.primary_blob_endpoint}deploymentpackage"
+  blobStorageAndContainer = "${azurerm_storage_account.sharepass.primary_blob_endpoint}${azurerm_storage_container.apiDeployment.name}"
 }
 
-resource "azurerm_function_app_flex_consumption" "functionApps" {
+resource "azurerm_function_app_flex_consumption" "api" {
   name                        = var.project_global_prefix
   resource_group_name         = data.azurerm_resource_group.sharepass.name
   location                    = data.azurerm_resource_group.sharepass.location
-  service_plan_id             = azurerm_service_plan.sharepass.id
+  service_plan_id             = azurerm_service_plan.api.id
   storage_container_type      = "blobContainer"
   storage_container_endpoint  = local.blobStorageAndContainer
   storage_authentication_type = "SystemAssignedIdentity"
@@ -36,9 +40,21 @@ resource "azurerm_function_app_flex_consumption" "functionApps" {
   }
 }
 
-resource "azurerm_role_assignment" "functionApps_blob_contributor" {
+# --------------------------------------------------------------------------
+# Role Assignment
+# --------------------------------------------------------------------------
+
+resource "azurerm_role_assignment" "api_blob_contributor" {
   scope = azurerm_storage_account.sharepass.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id = azurerm_function_app_flex_consumption.functionApps.identity.0.principal_id
+  principal_id = azurerm_function_app_flex_consumption.api.identity.0.principal_id
   principal_type = "ServicePrincipal"
+}
+
+# --------------------------------------------------------------------------
+# Outputs
+# --------------------------------------------------------------------------
+
+output "api_hostname" {
+  value = azurerm_function_app_flex_consumption.api.default_hostname
 }
