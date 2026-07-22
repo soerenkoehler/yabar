@@ -97,3 +97,4 @@ jobs:
             --verbose silly \
             --env "$DEPLOY_ENV" \
             --deployment-token "$DEPLOYMENT_TOKEN" \
+        working-directory: ./swa
