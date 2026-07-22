@@ -103,7 +103,7 @@ jobs:
           jq -r <<<"$OUTPUT" >./swa/web/config.json \
             '{
               api_hostname: .api_hostname.value,
-              auth_google_client_id: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
+              auth_google_client_id: "${{ secrets.AUTH_GOOGLE_CLIENT_ID }}"
             }'
 
           # -----
