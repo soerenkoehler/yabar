@@ -88,14 +88,36 @@ jobs:
 
       - name: Deploy to Static Web App
         run: |
+          # -----
+          # get tofu outputs
+          # -----
           pushd ./tf
-          DEPLOY_ENV="${DEPLOY_ENV:-preview}"
-          DEPLOYMENT_TOKEN=$(
-            tofu output -json 2>/dev/null \
-            | jq -r '.swa_deployment_token.value // ""'
+          OUTPUT=$(
+            tofu output -json 2>/dev/null
           )
           popd
 
+          # -----
+          # create config file
+          # -----
+          jq -r <<<"$OUTPUT" >./swa/web/config.json \
+            --arg auth_google_client_id ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
+            '{
+              api_hostname: .api_hostname.value,
+              auth_google_client_id: $auth_google_client_id
+            }'
+
+          # -----
+          # set deployment parameter
+          # -----
+          DEPLOY_ENV="${DEPLOY_ENV:-preview}"
+          DEPLOYMENT_TOKEN=$(
+            jq -r '.swa_deployment_token.value // ""' <<<"$OUTPUT"
+          )
+
+          # -----
+          # deploy SWA
+          # -----
           pushd ./swa
           swa deploy \
             --verbose silly \
