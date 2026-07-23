@@ -32,7 +32,14 @@ resource "azurerm_function_app_flex_consumption" "api" {
     type = "SystemAssigned"
   }
 
-  site_config {}
+  site_config {
+    cors {
+      allowed_origins = [
+        "https://${azurerm_static_web_app.swa.default_host_name}"
+      ]
+      support_credentials = false
+    }
+  }
 
   app_settings = {
     "AzureWebJobsStorage" = null
