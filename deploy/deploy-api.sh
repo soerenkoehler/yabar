@@ -18,14 +18,5 @@ az functionapp config appsettings delete \
 # --------------------
 pushd ./swa/api
 npm install
-zip -9r deploy.zip *
+func azure functionapp publish "$FUNCTION_NAME"
 popd
-
-# --------------------
-# deploy functions
-# --------------------
-az functionapp deployment source config-zip \
-    --src ./swa/api/deploy.zip \
-    --name "$FUNCTION_NAME" \
-    --resource-group "$PROJECT_RESOURCE_GROUP" \
-    --build-remote false

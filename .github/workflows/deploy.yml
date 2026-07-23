@@ -23,13 +23,16 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v6
 
-      - name: 'Node Setup'
+      - name: Node Setup
         uses: actions/setup-node@v6
         with:
           node-version: 22
 
       - name: Install SWA Cli
         run: npm install -g @azure/static-web-apps-cli
+
+      - name: Install Function Core Tools
+        run: npm install -g azure-functions-core-tools@4
 
       - name: TF setup
         uses: opentofu/setup-opentofu@v2
