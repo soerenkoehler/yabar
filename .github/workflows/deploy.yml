@@ -74,44 +74,12 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Run Azure Functions Zip Deploy
-        uses: azure/functions-action@v1
-        with:
-          app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
-          package: './swa/api'
+      - name: Deploy Azure Functions
+        run: ./deploy/deploy-api.sh
+        env:
+          PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
-      - name: Deploy to Static Web App
-        run: |
-          # -----
-          # get tofu outputs
-          # -----
-          pushd ./tf
-          OUTPUT=$(
-            tofu output -json 2>/dev/null
-          )
-          popd
-
-          # -----
-          # create config file
-          # -----
-          jq -r <<<"$OUTPUT" >./swa/web/config.json \
-            '{
-              api_hostname: .api_hostname.value,
-              auth_google_client_id: "${{ secrets.AUTH_GOOGLE_CLIENT_ID }}"
-            }'
-
-          # -----
-          # set deployment parameter
-          # -----
-          DEPLOYMENT_TOKEN=$(
-            jq -r '.swa_deployment_token.value // ""' <<<"$OUTPUT"
-          )
-
-          # -----
-          # deploy SWA
-          # -----
-          pushd ./swa
-          swa deploy \
-            --verbose silly \
-            --deployment-token "$DEPLOYMENT_TOKEN"
-          popd
+      - name: Deploy Static Web App
+        run: ./deploy/deploy-swa.sh
+        env:
+          AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}

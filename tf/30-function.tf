@@ -62,6 +62,10 @@ resource "azurerm_role_assignment" "api_blob_contributor" {
 # Outputs
 # --------------------------------------------------------------------------
 
+output "api_function_name" {
+  value = azurerm_function_app_flex_consumption.api.name
+}
+
 output "api_hostname" {
   value = azurerm_function_app_flex_consumption.api.default_hostname
 }
