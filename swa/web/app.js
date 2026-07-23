@@ -108,7 +108,7 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const response = await fetch(window.config.api_hostname + '/api/writeToQueue', {
+            const response = await fetch(`https://${window.config.api_hostname}/api/writeToQueue`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ value: messageInput.value })
