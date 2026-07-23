@@ -18,6 +18,7 @@ app.http('writeToQueue', {
                 };
             }
 
+            // TODO disabled
             // const connectionString = process.env.QueueConnectionString;
             // if (!connectionString) {
             //     context.error('QueueConnectionString environment variable is not defined.');
