@@ -42,7 +42,6 @@ resource "azurerm_function_app_flex_consumption" "api" {
   }
 
   app_settings = {
-    "AzureWebJobsStorage" = "." // Workaround until: https://github.com/hashicorp/terraform-provider-azurerm/pull/29099
     "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
   }
 }
