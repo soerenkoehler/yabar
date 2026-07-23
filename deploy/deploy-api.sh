@@ -18,7 +18,7 @@ az functionapp config appsettings delete \
 # --------------------
 pushd ./swa/api
 npm install
-zip -9r deploy.zip
+zip -9r deploy.zip *
 popd
 
 # --------------------
