@@ -12,14 +12,10 @@
         button { padding: 0.5rem 1rem; cursor: pointer; }
         #statusMessage { margin-top: 1rem; font-weight: bold; }
     </style>
-    <!-- TODO script src="https://accounts.google.com/gsi/client" async defer></script-->
     <script src="./app.js" defer></script>
 </head>
 <body>
-    <div id="g_id_onload"
-        data-client_id=""
-        data-callback="handleCredentialResponse">
-    </div>
+    <div id="g_id_onload" data-client_id="" data-callback="handleCredentialResponse"></div>
     <div class="g_id_signin" data-type="standard"></div>
 
     <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
