@@ -59,6 +59,7 @@ resource "azurerm_function_app_flex_consumption" "api" {
       ]
       support_credentials = false
     }
+    application_insights_connection_string = azurerm_application_insights.appInsights.connection_string
   }
 
   app_settings = {
