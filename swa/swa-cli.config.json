@@ -3,7 +3,8 @@
     "sharepass": {
       "appLocation": "web",
       "apiLocation": null,
-      "outputLocation": "."
+      "outputLocation": ".",
+      "env": "production"
     }
   }
 }
