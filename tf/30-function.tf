@@ -1,4 +1,24 @@
 # --------------------------------------------------------------------------
+# App Insights
+# --------------------------------------------------------------------------
+
+resource "azurerm_log_analytics_workspace" "logAnalyticsWorkspace" {
+  name                = var.project_global_prefix
+  resource_group_name = data.azurerm_resource_group.sharepass.name
+  location            = data.azurerm_resource_group.sharepass.location
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+resource "azurerm_application_insights" "appInsights" {
+  name                = var.project_global_prefix
+  resource_group_name = data.azurerm_resource_group.sharepass.name
+  location            = data.azurerm_resource_group.sharepass.location
+  application_type    = "web"
+  workspace_id        = azurerm_log_analytics_workspace.logAnalyticsWorkspace.id
+}
+
+# --------------------------------------------------------------------------
 # Function App
 # --------------------------------------------------------------------------
 
