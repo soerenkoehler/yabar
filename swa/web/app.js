@@ -85,7 +85,7 @@ async function initPage() {
 
     document
         .getElementById('g_id_onload')
-        .setAttribute('data-client_id', window.config.auth_google_client_id || '');
+        .setAttribute('data-client_id', `${window.config.auth_google_client_id || ''}`);
 
     document.getElementById('logoutButton').addEventListener('click', () => {
         if (currentUserHint && window.google?.accounts?.id?.revoke) {

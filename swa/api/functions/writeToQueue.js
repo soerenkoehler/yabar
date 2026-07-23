@@ -1,10 +1,53 @@
 const { app } = require('@azure/functions');
 const { QueueServiceClient } = require('@azure/storage-queue');
+const { OAuth2Client } = require('google-auth-library');
+
+const CLIENT_ID = process.env.AUTH_GOOGLE_CLIENT_ID;
+const client = new OAuth2Client(CLIENT_ID);
+
+const ALLOWED_EMAILS = ['soerenkoehler@gmail.com'];
 
 app.http('writeToQueue', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
+        const authHeader = request.headers.get('authorization');
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return {
+                status: 401,
+                jsonBody: { error: 'Unauthorized: Missing or malformed Bearer token.' }
+            };
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        try {
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: CLIENT_ID,
+            });
+
+            const payload = ticket.getPayload();
+            const userEmail = payload.email;
+            const isEmailVerified = payload.email_verified;
+
+            if (!isEmailVerified || !ALLOWED_EMAILS.includes(userEmail)) {
+                context.log(`Forbidden access attempt by: ${userEmail}`);
+                return {
+                    status: 403,
+                    jsonBody: { error: 'Forbidden: You do not have permission to access this resource.' }
+                };
+            }
+
+        } catch (error) {
+            context.error('Token validation failed:', error.message);
+            return {
+                status: 401,
+                jsonBody: { error: 'Unauthorized: Invalid or expired token.' }
+            };
+        }
+
         context.log(`Processing queue write request for URL: "${request.url}"`);
 
         try {

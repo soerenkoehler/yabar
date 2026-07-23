@@ -49,9 +49,10 @@ jobs:
       - name: TF Plan
         run: |
           tofu plan \
-            -var="project_global_prefix=${{ vars.PROJECT_GLOBAL_PREFIX }}" \
             -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
+            -var="project_global_prefix=${{ vars.PROJECT_GLOBAL_PREFIX }}" \
             -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
+            -var="auth_google_client_id=${{ secrets.AUTH_GOOGLE_CLIENT_ID }}" \
             -out=./plan.out
         working-directory: ./tf
 

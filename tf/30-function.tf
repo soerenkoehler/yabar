@@ -43,6 +43,7 @@ resource "azurerm_function_app_flex_consumption" "api" {
 
   app_settings = {
     "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
+    "AUTH_GOOGLE_CLIENT_ID"            = var.auth_google_client_id
   }
 }
 
