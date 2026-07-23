@@ -37,25 +37,9 @@
     <div id="statusMessage"></div>
 
     <script>
+        let currentUserHint = null;
         let config = {};
         window.config = config;
-
-        async function loadConfig() {
-            try {
-                const response = await fetch('/config.json', { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`Failed to load config.json (${response.status})`);
-                }
-                config = await response.json();
-                window.config = config;
-            } catch (error) {
-                console.error('Could not load config.json:', error);
-                config = {};
-                window.config = config;
-            }
-        }
-
-        let currentUserHint = null;
 
         function parseJwt(token) {
             try {
@@ -101,10 +85,25 @@
             setLoggedIn(username, userHint);
         }
 
+        async function loadConfig() {
+            try {
+                const response = await fetch('/config.json', { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to load config.json (${response.status})`);
+                }
+                config = await response.json();
+                window.config = config;
+            } catch (error) {
+                console.error('Could not load config.json:', error);
+                config = {};
+                window.config = config;
+            }
+        }
+
         async function initPage() {
             await loadConfig();
 
-            document.getElementById('g_id_onload').setAttribute('data-client_id') = window.config.auth_google_client_id;
+            document.getElementById('g_id_onload').setAttribute('data-client_id', window.config.auth_google_client_id);
 
             document.getElementById('logoutButton').addEventListener('click', () => {
                 if (currentUserHint && window.google?.accounts?.id?.revoke) {
