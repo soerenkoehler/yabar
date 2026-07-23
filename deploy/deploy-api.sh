@@ -18,6 +18,5 @@ az functionapp config appsettings delete \
 # --------------------
 pushd ./swa/api
 npm install
-func init --worker-runtime javascript
 func azure functionapp publish "$FUNCTION_NAME"
 popd
