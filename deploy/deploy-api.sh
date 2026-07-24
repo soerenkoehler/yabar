@@ -11,7 +11,7 @@ FUNCTION_NAME=$(
 az functionapp config appsettings delete \
     --name "$FUNCTION_NAME" \
     --resource-group "$PROJECT_RESOURCE_GROUP" \
-    --setting-names AzureWebJobStorage
+    --setting-names AzureWebJobsStorage
 
 # --------------------
 # build functions
