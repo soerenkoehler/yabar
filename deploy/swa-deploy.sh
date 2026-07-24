@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./deploy/get-output.sh
+source "./deploy/@get-output.sh"
 
 # --------------------
 # create config file

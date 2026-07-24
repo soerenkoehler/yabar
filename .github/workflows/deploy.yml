@@ -23,17 +23,6 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v6
 
-      - name: Node Setup
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-
-      - name: Install SWA Cli
-        run: npm install -g @azure/static-web-apps-cli
-
-      - name: Install Function Core Tools
-        run: npm install -g azure-functions-core-tools@4
-
       - name: TF setup
         uses: opentofu/setup-opentofu@v2
         with:
@@ -66,6 +55,14 @@ jobs:
             ./plan.out
         working-directory: ./tf
 
+      - name: Node Setup
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install SWA Cli
+        run: npm install -g @azure/static-web-apps-cli
+
       - name: Log in to Azure via OIDC
         uses: azure/login@v3
         with:
@@ -73,18 +70,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy Azure Functions
-        run: ./deploy/deploy-api.sh
+      - name: Prepare Azure Functions
+        run: ./deploy/api-pre-deploy.sh
         env:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
-      # - name: Deploy Azure Functions (Action)
-      #   uses: Azure/functions-action@v1
-      #   with:
-      #     app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
-      #     package: ./swa/api
+      - name: Deploy Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
+          package: ./swa/api
 
       - name: Deploy Static Web App
-        run: ./deploy/deploy-swa.sh
+        run: ./deploy/swa-deploy.sh
         env:
           AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}

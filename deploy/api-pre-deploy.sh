@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./deploy/get-output.sh
+source "./deploy/@get-output.sh"
 
 # --------------------
 # fix AzureWebJobStorage setting
@@ -18,5 +18,4 @@ az functionapp config appsettings delete \
 # --------------------
 pushd ./swa/api
 npm install
-func azure functionapp publish "$FUNCTION_NAME" --no-build --javascript
 popd
