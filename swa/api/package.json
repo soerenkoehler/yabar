@@ -5,6 +5,7 @@
   "main": "functions/*.js",
   "dependencies": {
     "@azure/functions": "^4.0.0",
-    "@azure/storage-queue": "^12.0.0"
+    "@azure/storage-queue": "^12.0.0",
+    "google-auth-library": "^10.0.0"
   }
 }

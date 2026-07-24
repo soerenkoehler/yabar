@@ -50,16 +50,16 @@ app.http('writeToQueue', {
 
         context.log(`Processing queue write request for URL: "${request.url}"`);
 
-        // try {
-        //     const body = await request.json();
-        //     const payload = body.value;
+        try {
+            const body = await request.json();
+            const payload = body.value;
 
-        //     if (!payload) {
-        //         return {
-        //             status: 400,
-        //             body: 'Missing "value" property in request payload.'
-        //         };
-        //     }
+            if (!payload) {
+                return {
+                    status: 400,
+                    body: 'Missing "value" property in request payload.'
+                };
+            }
 
             // TODO disabled
             // const connectionString = process.env.QueueConnectionString;
@@ -90,12 +90,12 @@ app.http('writeToQueue', {
                 body: JSON.stringify({ message: 'Message successfully enqueued.' })
             };
 
-        // } catch (error) {
-        //     context.error(`Failed to process request: ${error.message}`);
-        //     return {
-        //         status: 500,
-        //         body: 'Failed to write message to the storage queue.'
-        //     };
-        // }
+        } catch (error) {
+            context.error(`Failed to process request: ${error.message}`);
+            return {
+                status: 500,
+                body: 'Failed to write message to the storage queue.'
+            };
+        }
     }
 });
