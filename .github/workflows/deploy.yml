@@ -78,11 +78,11 @@ jobs:
         env:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
-      - name: Deploy Azure Functions (Action)
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
-          package: ./swa/api
+      # - name: Deploy Azure Functions (Action)
+      #   uses: Azure/functions-action@v1
+      #   with:
+      #     app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
+      #     package: ./swa/api
 
       - name: Deploy Static Web App
         run: ./deploy/deploy-swa.sh
