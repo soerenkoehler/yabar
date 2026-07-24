@@ -44,7 +44,7 @@ resource "azurerm_function_app_flex_consumption" "api" {
   storage_container_endpoint  = local.blobStorageAndContainer
   storage_authentication_type = "SystemAssignedIdentity"
   runtime_name                = "node"
-  runtime_version             = "22"
+  runtime_version             = "24"
   maximum_instance_count      = 10
   instance_memory_in_mb       = 512
 
