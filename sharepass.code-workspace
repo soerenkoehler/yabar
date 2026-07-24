@@ -10,6 +10,8 @@
         "files.exclude": {
             "**/.git": true,
             "**/.terraform*": true,
+            "**/__*storage__": true,
+            "**/__azurite*__.json": true
         }
     }
 }

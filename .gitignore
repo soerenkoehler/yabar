@@ -1,2 +1,8 @@
-.terraform*
 node_modules/
+__*storage__/
+__azurite*__.json
+
+.terraform*
+
+*.zip
+*.generated.js

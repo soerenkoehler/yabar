@@ -1,6 +1,7 @@
+const { TIMESTAMP } = require('./version.generated.js');
 const { app } = require('@azure/functions');
 
-app.http('helloWorld', {
+app.http(`info`, {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
@@ -8,7 +9,7 @@ app.http('helloWorld', {
         return {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'Hello World!' })
+            body: JSON.stringify({ message: `build timestamp = ${TIMESTAMP}` })
         };
     }
 });

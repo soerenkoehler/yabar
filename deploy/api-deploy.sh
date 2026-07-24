@@ -17,6 +17,6 @@ az functionapp config appsettings delete \
 # build functions
 # --------------------
 pushd ./swa/api
-npm install
+npm run build
 func azure functionapp publish "$FUNCTION_NAME" --no-build --javascript
 popd
