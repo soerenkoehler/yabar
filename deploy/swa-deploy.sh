@@ -9,7 +9,7 @@ jq -r <<<"$OUTPUT" >./swa/web/config.json \
     --arg auth_google_client_id "$AUTH_GOOGLE_CLIENT_ID" \
     '{
         api_hostname: .api_hostname.value,
-        auth_google_client_id: "$auth_google_client_id"
+        auth_google_client_id: $auth_google_client_id
     }'
 
 # --------------------
