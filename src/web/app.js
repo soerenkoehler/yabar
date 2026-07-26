@@ -33,7 +33,7 @@ function setLoggedOut() {
     authStatus.textContent = 'Not logged in';
     logoutButton.style.display = 'none';
     currentUserHint = null;
-    currentIdToken = null; // <-- clear token on logout
+    currentIdToken = null;
 }
 
 // must be global for data-callback="handleCredentialResponse"
@@ -44,7 +44,7 @@ window.handleCredentialResponse = async function handleCredentialResponse(respon
         return;
     }
 
-    currentIdToken = response.credential; // <-- store the token
+    currentIdToken = response.credential;
     const username = payload.name || payload.email || payload.sub || 'unknown user';
     const userHint = payload.email || payload.sub;
     setLoggedIn(username, userHint);
@@ -106,6 +106,32 @@ async function readFromQueue(id) {
     return response.text();
 }
 
+async function writeToQueue(value) {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (currentIdToken) {
+        headers.Authorization = `Bearer ${currentIdToken}`;
+    }
+
+    const response = await fetch(
+        `${window.config.api_hostname}/api/writeToQueue`,
+        {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ value })
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error (${response.status}): ${errorText}`);
+    }
+
+    return response.json();
+}
+
 async function initPage() {
     await loadConfig();
 
@@ -163,31 +189,33 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const response = await fetch(
-                `${window.config.api_hostname}/api/writeToQueue`,
-                {
-                    method: 'POST',
-                    headers: currentIdToken ? {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentIdToken}`
-                    } : {},
-                    body: JSON.stringify({ value: messageInput.value })
-                }
-            );
+            const result = await writeToQueue(messageInput.value);
+            const messageId = result?.messageId ?? result?.message_id ?? result?.id;
+            const readUrl = `${window.location.origin}${window.location.pathname}?m=${encodeURIComponent(messageId || '')}`;
 
-            if (response.ok) {
-                const result = await response.json();
-                statusMessage.style.color = 'green';
-                statusMessage.textContent = `Success: ${result.message}`;
-                messageInput.value = '';
-            } else {
-                const errorText = await response.text();
-                statusMessage.style.color = 'red';
-                statusMessage.textContent = `Error (${response.status}): ${errorText}`;
-            }
+            statusMessage.style.color = 'green';
+            statusMessage.innerHTML = '';
+
+            const line1 = document.createElement('div');
+            line1.textContent = `Success: ${result?.message || 'Queued'}`;
+
+            const line2 = document.createElement('div');
+            line2.textContent = `messageId: ${messageId || '(missing)'}`;
+
+            const line3 = document.createElement('div');
+            const link = document.createElement('a');
+            link.href = readUrl;
+            link.textContent = readUrl;
+            line3.append('URL: ', link);
+
+            statusMessage.append(line1, line2, line3);
+
+            messageInput.value = '';
         } catch (error) {
             statusMessage.style.color = 'red';
-            statusMessage.textContent = `Network error occurred: ${error.message}`;
+            statusMessage.innerHTML = error.message.startsWith('Error (')
+                ? error.message
+                : `Network error occurred: ${error.message}`;
         }
     });
 
