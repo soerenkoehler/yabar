@@ -10,7 +10,8 @@
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
         input[type="text"] { width: 100%; padding: 0.5rem; max-width: 400px; }
         button { padding: 0.5rem 1rem; cursor: pointer; }
-        #statusMessage { margin-top: 1rem; font-weight: bold; }
+        #statusMessage, #readStatusMessage { margin-top: 1rem; font-weight: bold; }
+        .hidden { display: none; }
     </style>
     <script src="./app.js" defer></script>
 </head>
@@ -30,6 +31,12 @@
         </div>
         <button type="submit">Submit to Queue</button>
     </form>
+
+    <section id="readFromQueueSection" class="hidden">
+        <h1>Read From Queue</h1>
+        <button id="showReadButton" type="button">Show</button>
+        <div id="readStatusMessage"></div>
+    </section>
 
     <div id="statusMessage"></div>
 </body>

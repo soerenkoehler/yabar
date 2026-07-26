@@ -1,53 +1,15 @@
 const { app } = require('@azure/functions');
-// const { QueueServiceClient } = require('@azure/storage-queue');
-const { OAuth2Client } = require('google-auth-library');
-
-const CLIENT_ID = process.env.AUTH_GOOGLE_CLIENT_ID;
-const client = new OAuth2Client(CLIENT_ID);
-console.log(`!! client_id = ${CLIENT_ID}`); // DEBUG
-console.log(`!! client = ${JSON.stringify(client)}`); // DEBUG
-
-const ALLOWED_EMAILS = ['soerenkoehler@gmail.com'];
+const { QueueServiceClient } = require('@azure/storage-queue');
+const { authorizeRequest } = require('./auth');
 
 app.http('writeToQueue', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        const authHeader = request.headers.get('authorization');
+        const authResponse = await authorizeRequest(request, context);
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return {
-                status: 401,
-                jsonBody: { error: 'Unauthorized: Missing or malformed Bearer token.' }
-            };
-        }
-
-        const token = authHeader.split(' ')[1];
-
-        try {
-            const ticket = await client.verifyIdToken({
-                idToken: token,
-                audience: CLIENT_ID,
-            });
-
-            const payload = ticket.getPayload();
-            const userEmail = payload.email;
-            const isEmailVerified = payload.email_verified;
-
-            if (!isEmailVerified || !ALLOWED_EMAILS.includes(userEmail)) {
-                context.log(`Forbidden access attempt by: ${userEmail}`);
-                return {
-                    status: 403,
-                    jsonBody: { error: 'Forbidden: You do not have permission to access this resource.' }
-                };
-            }
-
-        } catch (error) {
-            context.error('Token validation failed:', error.message);
-            return {
-                status: 401,
-                jsonBody: { error: 'Unauthorized: Invalid or expired token.' }
-            };
+        if (authResponse) {
+            return authResponse;
         }
 
         context.log(`Processing queue write request for URL: "${request.url}"`);
@@ -63,40 +25,75 @@ app.http('writeToQueue', {
                 };
             }
 
-            // TODO disabled
-            // const connectionString = process.env.QueueConnectionString;
-            // if (!connectionString) {
-            //     context.error('QueueConnectionString environment variable is not defined.');
-            //     return {
-            //         status: 500,
-            //         body: 'Internal server configuration error.'
-            //     };
-            // }
+            const connectionString = process.env.QueueConnectionString;
+            if (!connectionString) {
+                throw new Error("QueueConnectionString environment variable is not defined.")
+            }
 
             // Initialize the Queue Service Client
-            // const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
-            // const queueName = 'my-storage-queue';
-            // const queueClient = queueServiceClient.getQueueClient(queueName);
+            const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
+            context.log(`Queue service client: ${queueServiceClient}`);
+            const queueName = 'my-storage-queue';
+            const queueClient = queueServiceClient.getQueueClient(queueName);
+            context.log(`Queue client: ${queueClient}`);
+            if(!queueClient){
+                throw new Error("Cannot create queue client.")
+            }
 
             // Ensure the target queue exists prior to sending the message
-            // await queueClient.createIfNotExists();
+            await queueClient.createIfNotExists();
+            context.log("Queue created");
 
             // Base64 encode the message to prevent XML/JSON serialization issues in downstream services
-            // const base64Message = Buffer.from(payload).toString('base64');
+            const base64Message = Buffer.from(payload).toString('base64');
+            context.log(`Message: ${base64Message}`);
 
-            // await queueClient.sendMessage(base64Message);
+            const sendResponse = await queueClient.sendMessage(base64Message);
+            context.log(`Message sent: ${sendResponse}`);
+
+            // Debug: list existing messages currently in the queue (peek does not dequeue)
+            const peekResponse = await queueClient.peekMessages({ numberOfMessages: 32 });
+            context.log("Messages peeked");
+            const existingMessages = (peekResponse.peekedMessageItems || []).map((m) => {
+                let decodedText = null;
+                try {
+                    decodedText = Buffer.from(m.messageText || '', 'base64').toString('utf8');
+                } catch {
+                    decodedText = null;
+                }
+
+                return {
+                    messageId: m.messageId,
+                    insertedOn: m.insertedOn,
+                    expiresOn: m.expiresOn,
+                    dequeueCount: m.dequeueCount,
+                    messageTextBase64: m.messageText,
+                    messageTextDecoded: decodedText
+                };
+            });
+            context.log("Messages collected");
+
+            // Output debug info to console
+            context.log('Debug queue info:', {
+                queueName,
+                messageCount: existingMessages.length,
+                messages: existingMessages
+            });
 
             return {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'Message successfully enqueued.' })
+                body: JSON.stringify({
+                    message: 'Message successfully enqueued.',
+                    messageId: sendResponse.messageId
+                })
             };
 
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);
             return {
                 status: 500,
-                body: 'Failed to write message to the storage queue.'
+                body: 'Internal server error.'
             };
         }
     }

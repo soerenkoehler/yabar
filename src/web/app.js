@@ -1,4 +1,5 @@
 let currentUserHint = null;
+let currentIdToken = null; // <-- add this
 let config = {};
 window.config = config;
 
@@ -32,6 +33,7 @@ function setLoggedOut() {
     authStatus.textContent = 'Not logged in';
     logoutButton.style.display = 'none';
     currentUserHint = null;
+    currentIdToken = null; // <-- clear token on logout
 }
 
 // must be global for data-callback="handleCredentialResponse"
@@ -42,6 +44,7 @@ window.handleCredentialResponse = async function handleCredentialResponse(respon
         return;
     }
 
+    currentIdToken = response.credential; // <-- store the token
     const username = payload.name || payload.email || payload.sub || 'unknown user';
     const userHint = payload.email || payload.sub;
     setLoggedIn(username, userHint);
@@ -80,12 +83,64 @@ function loadGoogleGsiScript() {
     });
 }
 
+function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+async function readFromQueue(id) {
+    const response = await fetch(
+        `${window.config.api_hostname}/api/readFromQueue?id=${encodeURIComponent(id)}`,
+        {
+            method: 'GET',
+            headers: currentIdToken ? {
+                'Authorization': `Bearer ${currentIdToken}`
+            } : {}
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error (${response.status}): ${errorText}`);
+    }
+
+    return response.text();
+}
+
 async function initPage() {
     await loadConfig();
 
     document
         .getElementById('g_id_onload')
         .setAttribute('data-client_id', `${window.config.auth_google_client_id || ''}`);
+
+    const queueForm = document.getElementById('queueForm');
+    const readSection = document.getElementById('readFromQueueSection');
+    const m = getQueryParam('m');
+
+    if (m) {
+        queueForm.classList.add('hidden');
+        readSection.classList.remove('hidden');
+
+        const showReadButton = document.getElementById('showReadButton');
+        const readStatusMessage = document.getElementById('readStatusMessage');
+
+        showReadButton.addEventListener('click', async () => {
+            readStatusMessage.style.color = 'black';
+            readStatusMessage.textContent = 'Loading...';
+
+            try {
+                const value = await readFromQueue(m);
+                readStatusMessage.style.color = 'green';
+                readStatusMessage.textContent = value;
+            } catch (error) {
+                readStatusMessage.style.color = 'red';
+                readStatusMessage.textContent = error.message;
+            }
+        });
+    } else {
+        queueForm.classList.remove('hidden');
+        readSection.classList.add('hidden');
+    }
 
     document.getElementById('logoutButton').addEventListener('click', () => {
         if (currentUserHint && window.google?.accounts?.id?.revoke) {
@@ -99,7 +154,7 @@ async function initPage() {
         }
     });
 
-    document.getElementById('queueForm').addEventListener('submit', async (event) => {
+    queueForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const messageInput = document.getElementById('messageInput');
         const statusMessage = document.getElementById('statusMessage');
@@ -108,11 +163,17 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const response = await fetch(`https://${window.config.api_hostname}/api/writeToQueue`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ value: messageInput.value })
-            });
+            const response = await fetch(
+                `${window.config.api_hostname}/api/writeToQueue`,
+                {
+                    method: 'POST',
+                    headers: currentIdToken ? {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentIdToken}`
+                    } : {},
+                    body: JSON.stringify({ value: messageInput.value })
+                }
+            );
 
             if (response.ok) {
                 const result = await response.json();

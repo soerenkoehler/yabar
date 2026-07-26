@@ -7,3 +7,4 @@ AzuriteConfig
 
 *.zip
 *.generated.js
+src/web/config.json
