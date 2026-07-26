@@ -1,0 +1,21 @@
+info:
+  name: writeToQueue
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{functionapp_host}}/api/writeToQueue"
+  body:
+    type: json
+    data: |-
+      {
+        "value": "test"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
