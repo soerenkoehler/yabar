@@ -5,7 +5,7 @@ source "./deploy/@get-output.sh"
 # --------------------
 # create config file
 # --------------------
-jq -r <<<"$OUTPUT" >./swa/web/config.json \
+jq -r <<<"$OUTPUT" >./src/web/config.json \
     --arg auth_google_client_id "$AUTH_GOOGLE_CLIENT_ID" \
     '{
         api_hostname: .api_hostname.value,
@@ -22,7 +22,7 @@ DEPLOYMENT_TOKEN=$(
 # --------------------
 # deploy SWA
 # --------------------
-pushd ./swa
+pushd ./src
 swa deploy \
     --verbose silly \
     --deployment-token "$DEPLOYMENT_TOKEN"

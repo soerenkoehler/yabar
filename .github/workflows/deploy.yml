@@ -82,7 +82,7 @@ jobs:
       #   uses: Azure/functions-action@v1
       #   with:
       #     app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
-      #     package: ./swa/api
+      #     package: ./src/api
 
       - name: Deploy Static Web App
         run: ./deploy/swa-deploy.sh

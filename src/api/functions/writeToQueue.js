@@ -4,6 +4,8 @@ const { OAuth2Client } = require('google-auth-library');
 
 const CLIENT_ID = process.env.AUTH_GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
+console.log(`!! client_id = ${CLIENT_ID}`); // DEBUG
+console.log(`!! client = ${JSON.stringify(client)}`); // DEBUG
 
 const ALLOWED_EMAILS = ['soerenkoehler@gmail.com'];
 
