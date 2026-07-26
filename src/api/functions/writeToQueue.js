@@ -1,6 +1,6 @@
-const { app } = require('@azure/functions');
-const { QueueServiceClient } = require('@azure/storage-queue');
-const { authorizeRequest } = require('./auth');
+import { app } from '@azure/functions';
+import { authorizeRequest } from './auth';
+import { getQueueClient } from './queueClient';
 
 app.http('writeToQueue', {
     methods: ['POST'],
@@ -25,35 +25,14 @@ app.http('writeToQueue', {
                 };
             }
 
-            const connectionString = process.env.QueueConnectionString;
-            if (!connectionString) {
-                throw new Error("QueueConnectionString environment variable is not defined.")
-            }
-
-            // Initialize the Queue Service Client
-            const queueServiceClient = QueueServiceClient.fromConnectionString(connectionString);
-            context.log(`Queue service client: ${queueServiceClient}`);
-            const queueName = 'my-storage-queue';
-            const queueClient = queueServiceClient.getQueueClient(queueName);
-            context.log(`Queue client: ${queueClient}`);
-            if(!queueClient){
-                throw new Error("Cannot create queue client.")
-            }
-
-            // Ensure the target queue exists prior to sending the message
-            await queueClient.createIfNotExists();
-            context.log("Queue created");
+            const { queueClient, queueName } = await getQueueClient();
 
             // Base64 encode the message to prevent XML/JSON serialization issues in downstream services
             const base64Message = Buffer.from(payload).toString('base64');
-            context.log(`Message: ${base64Message}`);
-
             const sendResponse = await queueClient.sendMessage(base64Message);
-            context.log(`Message sent: ${sendResponse}`);
 
             // Debug: list existing messages currently in the queue (peek does not dequeue)
             const peekResponse = await queueClient.peekMessages({ numberOfMessages: 32 });
-            context.log("Messages peeked");
             const existingMessages = (peekResponse.peekedMessageItems || []).map((m) => {
                 let decodedText = null;
                 try {
@@ -71,9 +50,7 @@ app.http('writeToQueue', {
                     messageTextDecoded: decodedText
                 };
             });
-            context.log("Messages collected");
 
-            // Output debug info to console
             context.log('Debug queue info:', {
                 queueName,
                 messageCount: existingMessages.length,

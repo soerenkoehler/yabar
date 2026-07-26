@@ -1,4 +1,4 @@
-const { OAuth2Client } = require('google-auth-library');
+import { OAuth2Client } from 'google-auth-library';
 
 const authGoogleClientId = process.env.AUTH_GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(authGoogleClientId);
@@ -44,6 +44,6 @@ const authorizeRequest = async (request, context) => {
     }
 };
 
-module.exports = {
+export default {
     authorizeRequest
 };

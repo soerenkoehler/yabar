@@ -1,5 +1,5 @@
-const { TIMESTAMP } = require('./version.generated.js');
-const { app } = require('@azure/functions');
+import { TIMESTAMP } from './version.generated.js';
+import { app } from '@azure/functions';
 
 app.http(`info`, {
     methods: ['GET'],
