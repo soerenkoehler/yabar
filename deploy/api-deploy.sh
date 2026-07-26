@@ -25,8 +25,5 @@ curl \
     -H "Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')" \
     -H "Content-type: application/zip" \
     --data-binary @./api.zip \
-    "https://$FUNCTION_NAME.scm.azurewebsites.net/api/zipdeploy"
-
-# XXX old core tools method
-# func azure functionapp publish "$FUNCTION_NAME" --no-build --javascript
+    "https://$FUNCTION_NAME.scm.azurewebsites.net/api/publish"
 popd
