@@ -74,10 +74,18 @@ resource "azurerm_function_app_flex_consumption" "api" {
 # --------------------------------------------------------------------------
 
 resource "azurerm_role_assignment" "api_blob_contributor" {
-  scope = azurerm_storage_account.sharepass.id
+  scope                = azurerm_storage_account.sharepass.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id = azurerm_function_app_flex_consumption.api.identity.0.principal_id
-  principal_type = "ServicePrincipal"
+  principal_id         = azurerm_function_app_flex_consumption.api.identity.0.principal_id
+  principal_type       = "ServicePrincipal"
+}
+
+# Role for table data access (managed identity)
+resource "azurerm_role_assignment" "func_table_data_contributor" {
+  scope                = azurerm_storage_account.sharepass.id
+  role_definition_name = "Storage Table Data Contributor"
+  principal_id         = azurerm_function_app_flex_consumption.api.identity.0.principal_id
+  principal_type       = "ServicePrincipal"
 }
 
 # --------------------------------------------------------------------------

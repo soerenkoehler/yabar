@@ -1,6 +1,7 @@
 import { app } from '@azure/functions';
+import { randomUUID } from 'node:crypto';
 import { authorizeRequest } from './auth';
-import { getQueueClient } from './queueClient';
+import { getTableClient } from './tableClient';
 
 app.http('writeToQueue', {
     methods: ['POST'],
@@ -12,11 +13,11 @@ app.http('writeToQueue', {
             return authResponse;
         }
 
-        context.log(`Processing queue write request for URL: "${request.url}"`);
+        context.log(`Processing message write request for URL: "${request.url}"`);
 
         try {
             const body = await request.json();
-            const payload = body.value;
+            const payload = body?.value;
 
             if (!payload) {
                 return {
@@ -25,44 +26,24 @@ app.http('writeToQueue', {
                 };
             }
 
-            const { queueClient, queueName } = await getQueueClient();
+            const { tableClient, partitionKey, tableName } = await getTableClient();
+            const id = randomUUID();
 
-            // Base64 encode the message to prevent XML/JSON serialization issues in downstream services
-            const base64Message = Buffer.from(payload).toString('base64');
-            const sendResponse = await queueClient.sendMessage(base64Message);
-
-            // Debug: list existing messages currently in the queue (peek does not dequeue)
-            const peekResponse = await queueClient.peekMessages({ numberOfMessages: 32 });
-            const existingMessages = (peekResponse.peekedMessageItems || []).map((m) => {
-                let decodedText = null;
-                try {
-                    decodedText = Buffer.from(m.messageText || '', 'base64').toString('utf8');
-                } catch {
-                    decodedText = null;
-                }
-
-                return {
-                    messageId: m.messageId,
-                    insertedOn: m.insertedOn,
-                    expiresOn: m.expiresOn,
-                    dequeueCount: m.dequeueCount,
-                    messageTextBase64: m.messageText,
-                    messageTextDecoded: decodedText
-                };
+            await tableClient.createEntity({
+                partitionKey,
+                rowKey: id,
+                value: String(payload),
+                createdAt: new Date().toISOString()
             });
 
-            context.log('Debug queue info:', {
-                queueName,
-                messageCount: existingMessages.length,
-                messages: existingMessages
-            });
+            context.log('Stored message in table storage', { tableName, id });
 
             return {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: 'Message successfully enqueued.',
-                    messageId: sendResponse.messageId
+                    message: 'Message successfully stored.',
+                    messageId: id
                 })
             };
 

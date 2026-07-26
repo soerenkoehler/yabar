@@ -13,18 +13,17 @@ resource "azurerm_storage_account" "sharepass" {
 
   min_tls_version = "TLS1_2"
 
-  shared_access_key_enabled = false
+  shared_access_key_enabled       = false
   allow_nested_items_to_be_public = false
-  public_network_access_enabled = true
+  public_network_access_enabled   = true
   default_to_oauth_authentication = true
 }
 
 # --------------------------------------------------------------------------
-# Storage queue
+# Message Storage Table
 # --------------------------------------------------------------------------
-
-resource "azurerm_storage_queue" "sharepass" {
-  name               = "queue"
+resource "azurerm_storage_table" "messages" {
+  name               = "messages"
   storage_account_id = azurerm_storage_account.sharepass.id
 }
 
