@@ -17,6 +17,16 @@ az functionapp config appsettings delete \
 # build functions
 # --------------------
 pushd ./src/api
-npm run build
-func azure functionapp publish "$FUNCTION_NAME" --no-build --javascript
+func pack --skip-install # install is done as build step
+
+# using curl for fast deployment
+curl \
+    -X POST \
+    -H "Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')" \
+    -H "Content-type: application/zip" \
+    --data-binary @./api.zip \
+    "https://$FUNCTION_NAME.scm.azurewebsites.net/api/zipdeploy"
+
+# XXX old core tools method
+# func azure functionapp publish "$FUNCTION_NAME" --no-build --javascript
 popd

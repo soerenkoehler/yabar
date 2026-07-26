@@ -1,6 +1,7 @@
 *.template.js
 *.js.map
 *.ts
+*.zip
 .git*
 .vscode
 local.settings.json
