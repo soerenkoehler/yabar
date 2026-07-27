@@ -15,14 +15,15 @@ app.http('writeMessage', {
             // FIXME evaluate roles
 
             const body = await request.json();
-            const payload = body?.value;
+            const ttl = body?.ttl;
+            const value = body?.value;
 
-            if (!payload) {
+            if (!value) {
                 throwHttpError(400, 'Missing "value" property in request payload.');
             }
 
             const client = await getTableClient();
-            const id = await client.writeMessage(client.partitionKey, payload);
+            const id = await client.writeMessage(ttl, value);
 
             context.log('Stored message in table storage', { tableName: client.tableName, id });
 

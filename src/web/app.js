@@ -1,4 +1,4 @@
-import { setupAuth } from './auth.js';
+import { setupAuth, currentIdToken } from './auth.js';
 import { readMessage, writeMessage } from './api.js';
 
 let config = {};

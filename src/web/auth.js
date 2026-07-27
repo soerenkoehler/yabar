@@ -1,5 +1,6 @@
-export let currentUserHint = null;
-let currentIdToken = null;
+export let currentIdToken = null;
+
+let currentUserHint = null;
 let authStateChangedListener = null;
 
 function notifyAuthStateChanged() {
