@@ -1,5 +1,6 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
+import { throwHttpError } from './http.js';
 import { getTableClient } from './tableClient.js';
 
 app.http('writeToQueue', {
@@ -17,10 +18,7 @@ app.http('writeToQueue', {
             const payload = body?.value;
 
             if (!payload) {
-                return {
-                    status: 400,
-                    body: 'Missing "value" property in request payload.'
-                };
+                throwHttpError(400, 'Missing "value" property in request payload.');
             }
 
             const client = await getTableClient();

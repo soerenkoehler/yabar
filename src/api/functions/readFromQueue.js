@@ -1,5 +1,6 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
+import { throwHttpError } from './http.js';
 import { getTableClient } from './tableClient.js';
 
 app.http('readFromQueue', {
@@ -17,10 +18,7 @@ app.http('readFromQueue', {
             const messageId = url.searchParams.get('id');
 
             if (!messageId) {
-                return {
-                    status: 400,
-                    body: 'Missing "id" query parameter.'
-                };
+                throwHttpError(400, 'Missing "id" query parameter.');
             }
 
             const client = await getTableClient();
@@ -30,10 +28,7 @@ app.http('readFromQueue', {
                 value = await client.readMessage(client.partitionKey, messageId);
             } catch (error) {
                 if (error.message.includes('not found')) {
-                    return {
-                        status: 404,
-                        body: `Message with id "${messageId}" not found.`
-                    };
+                    throwHttpError(404, `Message with id "${messageId}" not found.`);
                 }
                 throw error;
             }
