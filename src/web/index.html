@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWA Queue Writer</title>
+    <title>Sharepass</title>
     <style>
         body { font-family: sans-serif; margin: 2rem; }
         .form-group { margin-bottom: 1rem; }
@@ -22,20 +22,20 @@
     <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
     <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
 
-    <section id="writeToQueueSection">
-        <h1>Submit Message to Queue</h1>
+    <section id="writeMessageSection">
+        <h1>Write Message</h1>
 
-        <form id="queueForm">
+        <form id="writeMessageForm">
             <div class="form-group">
                 <label for="messageInput">Message Payload:</label>
                 <input type="text" id="messageInput" required placeholder="Enter text here...">
             </div>
-            <button type="submit">Submit to Queue</button>
+            <button type="submit">Send</button>
         </form>
     </section>
 
-    <section id="readFromQueueSection" class="hidden">
-        <h1>Read From Queue</h1>
+    <section id="readMessageSection" class="hidden">
+        <h1>Read Message</h1>
         <button id="showReadButton" type="button">Show</button>
         <div id="readStatusMessage"></div>
     </section>

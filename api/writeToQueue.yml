@@ -1,11 +1,11 @@
 info:
-  name: writeToQueue
+  name: writeMessage
   type: http
   seq: 2
 
 http:
   method: POST
-  url: "{{functionapp_host}}/api/writeToQueue"
+  url: "{{functionapp_host}}/api/writeMessage"
   body:
     type: json
     data: |-

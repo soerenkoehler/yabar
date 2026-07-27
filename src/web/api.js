@@ -1,6 +1,6 @@
-export async function readFromQueue(id) {
+export async function readMessage(id) {
     const response = await fetch(
-        `${window.config.api_hostname}/api/readFromQueue?id=${encodeURIComponent(id)}`,
+        `${window.config.api_hostname}/api/readMessage?id=${encodeURIComponent(id)}`,
         {
             method: 'GET',
             headers: currentIdToken ? {
@@ -17,9 +17,9 @@ export async function readFromQueue(id) {
     return response.text();
 }
 
-export async function writeToQueue(ttl, value) {
+export async function writeMessage(ttl, value) {
     const response = await fetch(
-        `${window.config.api_hostname}/api/writeToQueue`,
+        `${window.config.api_hostname}/api/writeMessage`,
         {
             method: 'POST',
             headers: currentIdToken ? {

@@ -1,5 +1,5 @@
 import { setupAuth } from './auth.js';
-import { readFromQueue, writeToQueue } from './api.js';
+import { readMessage, writeMessage } from './api.js';
 
 let config = {};
 window.config = config;
@@ -30,30 +30,10 @@ async function initPage() {
         .getElementById('g_id_onload')
         .setAttribute('data-client_id', `${config.auth_google_client_id || ''}`);
 
-    const writeSection = document.getElementById('writeToQueueSection');
-    const queueForm = document.getElementById('queueForm');
-    const readSection = document.getElementById('readFromQueueSection');
+    const readSection = document.getElementById('readMessageSection');
+    const writeSection = document.getElementById('writeMessageSection');
+    const writeMessageForm = document.getElementById('writeMessageForm');
     const m = getQueryParam('m');
-
-    const updateContentVisibility = (isLoggedIn) => {
-        if (!isLoggedIn) {
-            writeSection.classList.add('hidden');
-            readSection.classList.add('hidden');
-            return;
-        }
-
-        if (m) {
-            writeSection.classList.add('hidden');
-            readSection.classList.remove('hidden');
-        } else {
-            writeSection.classList.remove('hidden');
-            readSection.classList.add('hidden');
-        }
-    };
-
-    setupAuth(({ isLoggedIn }) => {
-        updateContentVisibility(isLoggedIn);
-    });
 
     if (m) {
         const showReadButton = document.getElementById('showReadButton');
@@ -64,7 +44,7 @@ async function initPage() {
             readStatusMessage.textContent = 'Loading...';
 
             try {
-                const value = await readFromQueue(m);
+                const value = await readMessage(m);
                 readStatusMessage.style.color = 'green';
                 readStatusMessage.textContent = value;
             } catch (error) {
@@ -74,7 +54,25 @@ async function initPage() {
         });
     }
 
-    queueForm.addEventListener('submit', async (event) => {
+    setupAuth(({ isLoggedIn }) => {
+        ((isLoggedIn) => {
+            if (!isLoggedIn) {
+                writeSection.classList.add('hidden');
+                readSection.classList.add('hidden');
+                return;
+            }
+
+            if (m) {
+                writeSection.classList.add('hidden');
+                readSection.classList.remove('hidden');
+            } else {
+                writeSection.classList.remove('hidden');
+                readSection.classList.add('hidden');
+            }
+        })(isLoggedIn);
+    });
+
+    writeMessageForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const messageInput = document.getElementById('messageInput');
         const statusMessage = document.getElementById('statusMessage');
@@ -83,7 +81,7 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const result = await writeToQueue(messageInput.value);
+            const result = await writeMessage(messageInput.value);
             const messageId = result?.messageId ?? result?.message_id ?? result?.id;
             const readUrl = `${window.location.origin}${window.location.pathname}?m=${encodeURIComponent(messageId || '')}`;
 
@@ -91,7 +89,7 @@ async function initPage() {
             statusMessage.innerHTML = '';
 
             const line1 = document.createElement('div');
-            line1.textContent = `Success: ${result?.message || 'Queued'}`;
+            line1.textContent = `Success: ${result?.message || '(missing)'}`;
 
             const line2 = document.createElement('div');
             line2.textContent = `messageId: ${messageId || '(missing)'}`;

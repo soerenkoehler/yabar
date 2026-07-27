@@ -30,31 +30,31 @@ function parseJwt(token) {
     }
 }
 
-function setLoginButtonVisible(visible) {
+function setAuthButtonVisibility(isLoggedIn) {
     const loginButton = document.querySelector('.g_id_signin');
-    if (!loginButton) {
-        return;
+    const logoutButton = document.getElementById('logoutButton');
+
+    if (loginButton) {
+        loginButton.style.display = isLoggedIn ? 'none' : '';
     }
 
-    loginButton.style.display = visible ? '' : 'none';
+    if (logoutButton) {
+        logoutButton.style.display = isLoggedIn ? 'inline-block' : 'none';
+    }
 }
 
 function setLoggedIn(username, userHint) {
     const authStatus = document.getElementById('authStatus');
-    const logoutButton = document.getElementById('logoutButton');
     authStatus.textContent = `logged in as ${username}`;
-    logoutButton.style.display = 'inline-block'; // FIXME
-    setLoginButtonVisible(false);
+    setAuthButtonVisibility(true);
     currentUserHint = userHint || null;
     notifyAuthStateChanged();
 }
 
 function setLoggedOut() {
     const authStatus = document.getElementById('authStatus');
-    const logoutButton = document.getElementById('logoutButton');
     authStatus.textContent = 'Not logged in';
-    logoutButton.style.display = 'none'; // FIXME
-    setLoginButtonVisible(true);
+    setAuthButtonVisibility(false);
     currentUserHint = null;
     currentIdToken = null;
     notifyAuthStateChanged();

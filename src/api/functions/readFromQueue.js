@@ -3,7 +3,7 @@ import { authorizeRequest } from './auth.js';
 import { throwHttpError } from './http.js';
 import { getTableClient } from './tableClient.js';
 
-app.http('readFromQueue', {
+app.http('readMessage', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
