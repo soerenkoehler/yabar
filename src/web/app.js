@@ -1,54 +1,12 @@
-let currentUserHint = null;
-let currentIdToken = null; // <-- add this
+import './auth.js';
+import { readFromQueue, writeToQueue } from './api.js';
+
 let config = {};
 window.config = config;
 
-function parseJwt(token) {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-            atob(base64)
-                .split('')
-                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                .join('')
-        );
-        return JSON.parse(jsonPayload);
-    } catch {
-        return null;
-    }
+function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
 }
-
-function setLoggedIn(username, userHint) {
-    const authStatus = document.getElementById('authStatus');
-    const logoutButton = document.getElementById('logoutButton');
-    authStatus.textContent = `logged in as ${username}`;
-    logoutButton.style.display = 'inline-block';
-    currentUserHint = userHint || null;
-}
-
-function setLoggedOut() {
-    const authStatus = document.getElementById('authStatus');
-    const logoutButton = document.getElementById('logoutButton');
-    authStatus.textContent = 'Not logged in';
-    logoutButton.style.display = 'none';
-    currentUserHint = null;
-    currentIdToken = null;
-}
-
-// must be global for data-callback="handleCredentialResponse"
-window.handleCredentialResponse = async function handleCredentialResponse(response) {
-    const payload = parseJwt(response.credential);
-    if (!payload) {
-        setLoggedOut();
-        return;
-    }
-
-    currentIdToken = response.credential;
-    const username = payload.name || payload.email || payload.sub || 'unknown user';
-    const userHint = payload.email || payload.sub;
-    setLoggedIn(username, userHint);
-};
 
 async function loadConfig() {
     try {
@@ -65,86 +23,20 @@ async function loadConfig() {
     }
 }
 
-function loadGoogleGsiScript() {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector('script[data-google-gsi="true"]')) {
-            resolve();
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        script.dataset.googleGsi = 'true';
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Failed to load Google GSI script'));
-        document.head.appendChild(script);
-    });
-}
-
-function getQueryParam(name) {
-    return new URLSearchParams(window.location.search).get(name);
-}
-
-async function readFromQueue(id) {
-    const response = await fetch(
-        `${window.config.api_hostname}/api/readFromQueue?id=${encodeURIComponent(id)}`,
-        {
-            method: 'GET',
-            headers: currentIdToken ? {
-                'Authorization': `Bearer ${currentIdToken}`
-            } : {}
-        }
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error (${response.status}): ${errorText}`);
-    }
-
-    return response.text();
-}
-
-async function writeToQueue(value) {
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-
-    if (currentIdToken) {
-        headers.Authorization = `Bearer ${currentIdToken}`;
-    }
-
-    const response = await fetch(
-        `${window.config.api_hostname}/api/writeToQueue`,
-        {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ value })
-        }
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error (${response.status}): ${errorText}`);
-    }
-
-    return response.json();
-}
-
 async function initPage() {
     await loadConfig();
 
     document
         .getElementById('g_id_onload')
-        .setAttribute('data-client_id', `${window.config.auth_google_client_id || ''}`);
+        .setAttribute('data-client_id', `${config.auth_google_client_id || ''}`);
 
+    const writeSection = document.getElementById('writeToQueueSection');
     const queueForm = document.getElementById('queueForm');
     const readSection = document.getElementById('readFromQueueSection');
     const m = getQueryParam('m');
 
     if (m) {
-        queueForm.classList.add('hidden');
+        writeSection.classList.add('hidden');
         readSection.classList.remove('hidden');
 
         const showReadButton = document.getElementById('showReadButton');
@@ -164,7 +56,7 @@ async function initPage() {
             }
         });
     } else {
-        queueForm.classList.remove('hidden');
+        writeSection.classList.remove('hidden');
         readSection.classList.add('hidden');
     }
 

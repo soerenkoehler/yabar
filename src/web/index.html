@@ -13,7 +13,7 @@
         #statusMessage, #readStatusMessage { margin-top: 1rem; font-weight: bold; }
         .hidden { display: none; }
     </style>
-    <script src="./app.js" defer></script>
+    <script type="module" src="./app.js"></script>
 </head>
 <body>
     <div id="g_id_onload" data-client_id="" data-callback="handleCredentialResponse"></div>
@@ -22,15 +22,17 @@
     <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
     <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
 
-    <h1>Submit Message to Queue</h1>
+    <section id="writeToQueueSection">
+        <h1>Submit Message to Queue</h1>
 
-    <form id="queueForm">
-        <div class="form-group">
-            <label for="messageInput">Message Payload:</label>
-            <input type="text" id="messageInput" required placeholder="Enter text here...">
-        </div>
-        <button type="submit">Submit to Queue</button>
-    </form>
+        <form id="queueForm">
+            <div class="form-group">
+                <label for="messageInput">Message Payload:</label>
+                <input type="text" id="messageInput" required placeholder="Enter text here...">
+            </div>
+            <button type="submit">Submit to Queue</button>
+        </form>
+    </section>
 
     <section id="readFromQueueSection" class="hidden">
         <h1>Read From Queue</h1>
