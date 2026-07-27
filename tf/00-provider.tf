@@ -12,13 +12,15 @@ terraform {
     }
   }
 
-  backend "azurerm" {}
+  backend "azurerm" {
+    use_azuread_auth = true
+  }
 }
 
 provider "azurerm" {
   features {}
-  # Disables provider-level fallback to key-based authentication for
-  # storage data-plane operations performed by Terraform itself.
+
+  # Keep Azure data-plane operations on Entra ID auth.
   storage_use_azuread = true
 }
 
