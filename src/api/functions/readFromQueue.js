@@ -6,12 +6,13 @@ app.http('readFromQueue', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        const authResponse = await authorizeRequest(request, context);
-        if (authResponse) {
-            return authResponse;
-        }
+        context.log(`Processing message read request for URL: "${request.url}"`);
 
         try {
+            const roles = await authorizeRequest(request, context);
+            context.log('Authorized roles:', roles);
+            // FIXME evaluate roles
+
             const url = new URL(request.url);
             const messageId = url.searchParams.get('id');
 
@@ -45,7 +46,12 @@ app.http('readFromQueue', {
                 body: value
             };
         } catch (error) {
-            context.error(`Failed to read message from table: ${error.message}`);
+            context.error(`Failed to process request: ${error.message}`);
+
+            if (error?.cause?.status) {
+                return error.cause;
+            }
+
             return {
                 status: 500,
                 body: 'Internal server error.'

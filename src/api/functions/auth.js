@@ -2,16 +2,22 @@ import { OAuth2Client } from 'google-auth-library';
 
 const authGoogleClientId = process.env.AUTH_GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(authGoogleClientId);
-const allowedEmails = ['soerenkoehler@gmail.com'];
+const roleAssignments = {
+    'soerenkoehler@gmail.com': ['admin', 'write'],
+};
+
+const throwAuthError = (message, response) => {
+    throw new Error(message, { cause: response });
+};
 
 const authorizeRequest = async (request, context) => {
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return {
+        throwAuthError('Unauthorized: Missing or malformed Bearer token.', {
             status: 401,
             jsonBody: { error: 'Unauthorized: Missing or malformed Bearer token.' }
-        };
+        });
     }
 
     const token = authHeader.split(' ')[1];
@@ -26,21 +32,25 @@ const authorizeRequest = async (request, context) => {
         const userEmail = payload.email;
         const isEmailVerified = payload.email_verified;
 
-        if (!isEmailVerified || !allowedEmails.includes(userEmail)) {
-            context.log(`Forbidden access attempt by: ${userEmail}`);
-            return {
-                status: 403,
-                jsonBody: { error: 'Forbidden: You do not have permission to access this resource.' }
-            };
+        if (!isEmailVerified || !userEmail) {
+            context.log(`Unauthorized access attempt by: ${userEmail}`);
+            throwAuthError('Unauthorized: Email is not verified.', {
+                status: 401,
+                jsonBody: { error: 'Unauthorized: Email is not verified.' }
+            });
         }
 
-        return null;
+        return roleAssignments[userEmail] ?? [];
     } catch (error) {
+        if (error?.cause?.status) {
+            throw error;
+        }
+
         context.error('Token validation failed:', error.message);
-        return {
+        throwAuthError('Unauthorized: Invalid or expired token.', {
             status: 401,
             jsonBody: { error: 'Unauthorized: Invalid or expired token.' }
-        };
+        });
     }
 };
 

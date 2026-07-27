@@ -6,15 +6,13 @@ app.http('writeToQueue', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        const authResponse = await authorizeRequest(request, context);
-
-        if (authResponse) {
-            return authResponse;
-        }
-
         context.log(`Processing message write request for URL: "${request.url}"`);
 
         try {
+            const roles = await authorizeRequest(request, context);
+            context.log('Authorized roles:', roles);
+            // FIXME evaluate roles
+
             const body = await request.json();
             const payload = body?.value;
 
@@ -41,6 +39,11 @@ app.http('writeToQueue', {
 
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);
+
+            if (error?.cause?.status) {
+                return error.cause;
+            }
+
             return {
                 status: 500,
                 body: 'Internal server error.'
