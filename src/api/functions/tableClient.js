@@ -13,7 +13,7 @@ export async function getTableClient() {
     }
 
     const tableName = process.env.TableName || 'messages';
-    // FIX review partitionKey
+    // FIXME review partitionKey
     const partitionKey = process.env.TablePartitionKey || 'default';
 
     const tableClient = TableClient.fromConnectionString(connectionString, tableName);
