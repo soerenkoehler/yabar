@@ -81,7 +81,7 @@ resource "azurerm_role_assignment" "api_blob_contributor" {
 }
 
 # Role for table data access (managed identity)
-resource "azurerm_role_assignment" "func_table_data_contributor" {
+resource "azurerm_role_assignment" "api_table_data_contributor" {
   scope                = azurerm_storage_account.sharepass.id
   role_definition_name = "Storage Table Data Contributor"
   principal_id         = azurerm_function_app_flex_consumption.api.identity.0.principal_id
