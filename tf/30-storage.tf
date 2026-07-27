@@ -22,9 +22,11 @@ resource "azurerm_storage_account" "sharepass" {
 # --------------------------------------------------------------------------
 # Message Storage Table
 # --------------------------------------------------------------------------
-resource "azurerm_storage_table" "messages" {
-  name               = "messages"
-  storage_account_id = azurerm_storage_account.sharepass.id
+resource "azapi_resource" "messages" {
+  type      = "Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01"
+  name      = "messages"
+  parent_id = "${azurerm_storage_account.sharepass.id}/tableServices/default"
+  body      = {}
 }
 
 # --------------------------------------------------------------------------
