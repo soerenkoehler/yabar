@@ -28,9 +28,7 @@ export async function getTableClient() {
         throw new Error('TableConnectionString environment variable is not defined.');
     }
 
-    const tableName = process.env.TableName || 'messages';
-    // FIXME review partitionKey
-    const partitionKey = process.env.TablePartitionKey || 'default';
+    const tableName = 'messages';
 
     const tableClient = TableClient.fromConnectionString(connectionString, tableName);
     await tableClient.createTable();
@@ -38,7 +36,6 @@ export async function getTableClient() {
     const client = {
         tableClient,
         tableName,
-        partitionKey,
 
         async writeMessage(pk, message) {
             const rowKey = generateRowKey();
