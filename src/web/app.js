@@ -1,4 +1,4 @@
-import './auth.js';
+import { setupAuth } from './auth.js';
 import { readFromQueue, writeToQueue } from './api.js';
 
 let config = {};
@@ -35,10 +35,27 @@ async function initPage() {
     const readSection = document.getElementById('readFromQueueSection');
     const m = getQueryParam('m');
 
-    if (m) {
-        writeSection.classList.add('hidden');
-        readSection.classList.remove('hidden');
+    const updateContentVisibility = (isLoggedIn) => {
+        if (!isLoggedIn) {
+            writeSection.classList.add('hidden');
+            readSection.classList.add('hidden');
+            return;
+        }
 
+        if (m) {
+            writeSection.classList.add('hidden');
+            readSection.classList.remove('hidden');
+        } else {
+            writeSection.classList.remove('hidden');
+            readSection.classList.add('hidden');
+        }
+    };
+
+    setupAuth(({ isLoggedIn }) => {
+        updateContentVisibility(isLoggedIn);
+    });
+
+    if (m) {
         const showReadButton = document.getElementById('showReadButton');
         const readStatusMessage = document.getElementById('readStatusMessage');
 
@@ -55,22 +72,7 @@ async function initPage() {
                 readStatusMessage.textContent = error.message;
             }
         });
-    } else {
-        writeSection.classList.remove('hidden');
-        readSection.classList.add('hidden');
     }
-
-    document.getElementById('logoutButton').addEventListener('click', () => {
-        if (currentUserHint && window.google?.accounts?.id?.revoke) {
-            google.accounts.id.revoke(currentUserHint, () => setLoggedOut());
-        } else {
-            setLoggedOut();
-        }
-
-        if (window.google?.accounts?.id?.disableAutoSelect) {
-            google.accounts.id.disableAutoSelect();
-        }
-    });
 
     queueForm.addEventListener('submit', async (event) => {
         event.preventDefault();

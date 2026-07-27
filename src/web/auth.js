@@ -1,5 +1,18 @@
-let currentUserHint = null;
+export let currentUserHint = null;
 let currentIdToken = null;
+let authStateChangedListener = null;
+
+function notifyAuthStateChanged() {
+    if (!authStateChangedListener) {
+        return;
+    }
+
+    authStateChangedListener({
+        isLoggedIn: Boolean(currentIdToken),
+        userHint: currentUserHint,
+        idToken: currentIdToken
+    });
+}
 
 function parseJwt(token) {
     try {
@@ -17,25 +30,38 @@ function parseJwt(token) {
     }
 }
 
+function setLoginButtonVisible(visible) {
+    const loginButton = document.querySelector('.g_id_signin');
+    if (!loginButton) {
+        return;
+    }
+
+    loginButton.style.display = visible ? '' : 'none';
+}
+
 function setLoggedIn(username, userHint) {
     const authStatus = document.getElementById('authStatus');
     const logoutButton = document.getElementById('logoutButton');
     authStatus.textContent = `logged in as ${username}`;
-    logoutButton.style.display = 'inline-block';
+    logoutButton.style.display = 'inline-block'; // FIXME
+    setLoginButtonVisible(false);
     currentUserHint = userHint || null;
+    notifyAuthStateChanged();
 }
 
 function setLoggedOut() {
     const authStatus = document.getElementById('authStatus');
     const logoutButton = document.getElementById('logoutButton');
     authStatus.textContent = 'Not logged in';
-    logoutButton.style.display = 'none';
+    logoutButton.style.display = 'none'; // FIXME
+    setLoginButtonVisible(true);
     currentUserHint = null;
     currentIdToken = null;
+    notifyAuthStateChanged();
 }
 
 // must be global for data-callback="handleCredentialResponse"
-window.handleCredentialResponse = async function handleCredentialResponse(response) {
+window.handleGoogleGsiResponse = async function handleCredentialResponse(response) {
     const payload = parseJwt(response.credential);
     if (!payload) {
         setLoggedOut();
@@ -64,4 +90,30 @@ function loadGoogleGsiScript() {
         script.onerror = () => reject(new Error('Failed to load Google GSI script'));
         document.head.appendChild(script);
     });
+}
+
+export function setupAuth(listener) {
+    const logoutButton = document.getElementById('logoutButton');
+    if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
+        return;
+    }
+
+    loadGoogleGsiScript();
+
+    logoutButton.addEventListener('click', () => {
+        if (currentUserHint && window.google?.accounts?.id?.revoke) {
+            google.accounts.id.revoke(currentUserHint, () => setLoggedOut());
+        } else {
+            setLoggedOut();
+        }
+
+        if (window.google?.accounts?.id?.disableAutoSelect) {
+            google.accounts.id.disableAutoSelect();
+        }
+    });
+
+    logoutButton.dataset.boundLogoutHandler = 'true';
+
+    authStateChangedListener = listener;
+    notifyAuthStateChanged();
 }
