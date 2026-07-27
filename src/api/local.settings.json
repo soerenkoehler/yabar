@@ -3,7 +3,7 @@
     "Values": {
         "FUNCTIONS_WORKER_RUNTIME": "node",
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-        "QueueConnectionString": "UseDevelopmentStorage=true"
+        "TableConnectionString": "UseDevelopmentStorage=true"
     },
     "Host": {
         "CORS": "http://localhost:4280",

@@ -1,6 +1,6 @@
 import { app } from '@azure/functions';
-import { authorizeRequest } from './auth';
-import { getTableClient } from './tableClient';
+import { authorizeRequest } from './auth.js';
+import { getTableClient } from './tableClient.js';
 
 app.http('readFromQueue', {
     methods: ['GET'],
@@ -22,13 +22,13 @@ app.http('readFromQueue', {
                 };
             }
 
-            const { tableClient, partitionKey } = await getTableClient();
+            const client = await getTableClient();
 
-            let entity;
+            let value;
             try {
-                entity = await tableClient.getEntity(partitionKey, messageId);
+                value = await client.readMessage(client.partitionKey, messageId);
             } catch (error) {
-                if (error?.statusCode === 404) {
+                if (error.message.includes('not found')) {
                     return {
                         status: 404,
                         body: `Message with id "${messageId}" not found.`
@@ -37,12 +37,12 @@ app.http('readFromQueue', {
                 throw error;
             }
 
-            await tableClient.deleteEntity(partitionKey, messageId);
+            await client.tableClient.deleteEntity(client.partitionKey, messageId);
 
             return {
                 status: 200,
                 headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                body: entity.value ?? ''
+                body: value
             };
         } catch (error) {
             context.error(`Failed to read message from table: ${error.message}`);

@@ -1,7 +1,6 @@
 import { app } from '@azure/functions';
-import { randomUUID } from 'node:crypto';
-import { authorizeRequest } from './auth';
-import { getTableClient } from './tableClient';
+import { authorizeRequest } from './auth.js';
+import { getTableClient } from './tableClient.js';
 
 app.http('writeToQueue', {
     methods: ['POST'],
@@ -26,17 +25,10 @@ app.http('writeToQueue', {
                 };
             }
 
-            const { tableClient, partitionKey, tableName } = await getTableClient();
-            const id = randomUUID();
+            const client = await getTableClient();
+            const id = await client.writeMessage(client.partitionKey, payload);
 
-            await tableClient.createEntity({
-                partitionKey,
-                rowKey: id,
-                value: String(payload),
-                createdAt: new Date().toISOString()
-            });
-
-            context.log('Stored message in table storage', { tableName, id });
+            context.log('Stored message in table storage', { tableName: client.tableName, id });
 
             return {
                 status: 200,

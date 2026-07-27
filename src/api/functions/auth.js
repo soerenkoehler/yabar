@@ -44,6 +44,4 @@ const authorizeRequest = async (request, context) => {
     }
 };
 
-export default {
-    authorizeRequest
-};
+export { authorizeRequest };

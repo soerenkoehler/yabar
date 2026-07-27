@@ -1,3 +1,1 @@
-module.exports = {
-    TIMESTAMP: '$TIMESTAMP'
-};
+export const TIMESTAMP = '$TIMESTAMP';
