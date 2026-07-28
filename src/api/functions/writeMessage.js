@@ -29,14 +29,11 @@ app.http('writeMessage', {
             const client = await getTableClient();
             const id = await client.writeMessage(ttl, value);
 
-            context.log('Stored message in table storage', { tableName: client.tableName, id });
-
             return {
                 status: 200,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ttl, id })
+                headers: { 'Content-Type': 'text/plain' },
+                body: id
             };
-
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);
 

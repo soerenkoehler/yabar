@@ -39,5 +39,5 @@ export async function writeMessage(ttl, value) {
         throw new Error(`Error (${response.status}): ${errorText}`);
     }
 
-    return response.json();
+    return response.text();
 }

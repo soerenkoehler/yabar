@@ -10,7 +10,15 @@
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
         input[type="text"] { width: 100%; padding: 0.5rem; max-width: 400px; }
         button { padding: 0.5rem 1rem; cursor: pointer; }
-        #statusMessage, #readStatusMessage { margin-top: 1rem; font-weight: bold; }
+        #readMessageOutput { margin-top: 1rem; font-weight: bold; }
+        .write-message-feedback { margin-top: 1rem; font-weight: bold; }
+        .write-message-status,
+        .write-message-results { display: none; }
+        .write-message-section.is-submitting .write-message-status,
+        .write-message-section.is-error .write-message-status,
+        .write-message-section.is-success .write-message-results { display: block; }
+        .write-message-url,
+        .write-message-one-click { margin-top: 0.5rem; }
         .hidden { display: none; }
     </style>
     <script type="module" src="./app.js"></script>
@@ -22,7 +30,7 @@
     <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
     <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
 
-    <section id="writeMessageSection">
+    <section id="writeMessageSection" class="write-message-section">
         <h1>Write Message</h1>
 
         <form id="writeMessageForm">
@@ -40,14 +48,27 @@
             </div>
             <button type="submit">Send</button>
         </form>
+
+        <div class="write-message-feedback">
+            <div class="write-message-status" data-role="status"></div>
+            <div class="write-message-results">
+                <div class="write-message-url">
+                    Message URL (no key): <a data-role="two-step-link" href="" target="_blank" rel="noreferrer noopener"></a>
+                </div>
+                <div class="write-message-key">
+                    Key: <span data-role="key-text"></span>
+                </div>
+                <div class="write-message-one-click">
+                    One-Click URL: <a data-role="one-click-link" href="" target="_blank" rel="noreferrer noopener"></a>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section id="readMessageSection" class="hidden">
         <h1>Read Message</h1>
         <button id="showReadButton" type="button">Show</button>
-        <div id="readStatusMessage"></div>
+        <div id="readMessageOutput"></div>
     </section>
-
-    <div id="statusMessage"></div>
 </body>
 </html>

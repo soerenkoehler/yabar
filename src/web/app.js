@@ -1,12 +1,16 @@
 import { setupAuth } from './auth.js';
-import { fromBase64, toBase64 } from './base64.js'
+import { toSaltedBase64 } from './base64.js'
 import { readMessage, writeMessage } from './api.js';
 
 let config = {};
 window.config = config;
 
-function getQueryParam(name) {
-    return new URLSearchParams(window.location.search).get(name);
+function createLink(element, data) {
+    const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
+    const shortToken = token.length > 6 ? `${token.slice(0, 6)}...` : token;
+
+    element.href = `${window.location.origin}?${token}`;
+    element.textContent = `${window.location.origin}?${shortToken}`;
 }
 
 async function loadConfig() {
@@ -31,89 +35,93 @@ async function initPage() {
         .getElementById('g_id_onload')
         .setAttribute('data-client_id', `${config.auth_google_client_id || ''}`);
 
+    await loadGoogleGsiScript();
+
     const readSection = document.getElementById('readMessageSection');
     const writeSection = document.getElementById('writeMessageSection');
     const writeMessageForm = document.getElementById('writeMessageForm');
-    const m = getQueryParam('m');
+    const writeMessageStatus = writeSection.querySelector('[data-role="status"]');
+    const writeMessageTwoStepLink = writeSection.querySelector('[data-role="two-step-link"]');
+    const writeMessageKeyText = writeSection.querySelector('[data-role="key-text"]');
+    const writeMessageOneClickLink = writeSection.querySelector('[data-role="one-click-link"]');
+    const m = window.location.search.slice(1);
 
     if (m) {
         const showReadButton = document.getElementById('showReadButton');
-        const readStatusMessage = document.getElementById('readStatusMessage');
+        const readMessageOutput = document.getElementById('readMessageOutput');
 
         showReadButton.addEventListener('click', async () => {
-            readStatusMessage.style.color = 'black';
-            readStatusMessage.textContent = 'Loading...';
+            readMessageOutput.style.color = 'black';
+            readMessageOutput.textContent = 'Loading...';
 
             try {
                 const value = await readMessage(m);
-                readStatusMessage.style.color = 'green';
-                readStatusMessage.textContent = value;
+                readMessageOutput.style.color = 'green';
+                readMessageOutput.textContent = value;
             } catch (error) {
-                readStatusMessage.style.color = 'red';
-                readStatusMessage.textContent = error.message;
+                readMessageOutput.style.color = 'red';
+                readMessageOutput.textContent = error.message;
             }
         });
     }
 
     setupAuth(({ isLoggedIn }) => {
-        ((isLoggedIn) => {
-            if (!isLoggedIn) {
-                writeSection.classList.add('hidden');
-                readSection.classList.add('hidden');
-                return;
-            }
+        if (!isLoggedIn) {
+            writeSection.classList.add('hidden');
+            readSection.classList.add('hidden');
+            return;
+        }
 
-            if (m) {
-                writeSection.classList.add('hidden');
-                readSection.classList.remove('hidden');
-            } else {
-                writeSection.classList.remove('hidden');
-                readSection.classList.add('hidden');
-            }
-        })(isLoggedIn);
-    });
-
-    writeMessageForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const durationInput = document.getElementById('durationInput');
-        const messageInput = document.getElementById('messageInput');
-        const statusMessage = document.getElementById('statusMessage');
-
-        statusMessage.style.color = 'black';
-        statusMessage.textContent = 'Submitting...';
-
-        try {
-            const messageId = await writeMessage(durationInput.value, messageInput.value);
-            const readUrl = `${window.location.origin}${window.location.pathname}?${encodeURIComponent(messageId || '')}`;
-
-            statusMessage.style.color = 'green';
-            statusMessage.innerHTML = '';
-
-            const line1 = document.createElement('div');
-            line1.textContent = 'Success!';
-
-            const line2 = document.createElement('div');
-            line2.textContent = `messageId: ${messageId || '(missing)'}`;
-
-            const line3 = document.createElement('div');
-            const link = document.createElement('a');
-            link.href = readUrl;
-            link.textContent = readUrl;
-            line3.append('URL: ', link);
-
-            statusMessage.append(line1, line2, line3);
-
-            messageInput.value = '';
-        } catch (error) {
-            statusMessage.style.color = 'red';
-            statusMessage.innerHTML = error.message.startsWith('Error (')
-                ? error.message
-                : `Network error occurred: ${error.message}`;
+        if (m) {
+            writeSection.classList.add('hidden');
+            readSection.classList.remove('hidden');
+        } else {
+            writeSection.classList.remove('hidden');
+            readSection.classList.add('hidden');
         }
     });
 
-    // requirement: initPage() runs before loading Google GSI
-    await loadGoogleGsiScript();
+    writeMessageForm.addEventListener('submit', async (event) => {
+        const setWriteMessageState = (stateClass = '', statusText = '') => {
+            writeSection.classList.remove('is-submitting', 'is-error', 'is-success');
+            if (stateClass) {
+                writeSection.classList.add(stateClass);
+            }
+            writeMessageStatus.textContent = statusText;
+        }
+
+        event.preventDefault();
+        const inputTtl = document.getElementById('durationInput');
+        const inputMsg = document.getElementById('messageInput');
+
+        setWriteMessageState('is-submitting', 'Submitting...');
+
+        try {
+            const id = await writeMessage(inputTtl.value, inputMsg.value);
+            const key = crypto.randomUUID();
+
+            setWriteMessageState('is-success');
+
+            createLink(writeMessageTwoStepLink, {
+                ttl: inputTtl.value, id
+            });
+
+            writeMessageKeyText.textContent = toSaltedBase64(key)
+
+            createLink(writeMessageOneClickLink, {
+                ttl: inputTtl.value, id, key
+            });
+
+            inputMsg.value = '';
+        } catch (error) {
+            setWriteMessageState(
+                'is-error',
+                error.message.startsWith('Error (')
+                    ? error.message
+                    : `Network error occurred: ${error.message}`
+            );
+        }
+    });
 }
 
 window.addEventListener('DOMContentLoaded', initPage);
