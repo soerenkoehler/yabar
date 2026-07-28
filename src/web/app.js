@@ -1,7 +1,6 @@
 import { setupAuth } from './auth.js';
+import { fromBase64, toBase64 } from './base64.js'
 import { readMessage, writeMessage } from './api.js';
-
-const BASE64URL = { alphabet: 'base64url' };
 
 let config = {};
 window.config = config;
@@ -27,12 +26,6 @@ async function loadConfig() {
 
 async function initPage() {
     await loadConfig();
-
-    const a = "Hello World";
-    const b = new TextEncoder().encode(a).toBase64(BASE64URL);
-    const c = Uint8Array.fromBase64(b, BASE64URL);
-    console.log(`encoded=${b}`);
-    console.log(`decoded=${c}`);
 
     document
         .getElementById('g_id_onload')

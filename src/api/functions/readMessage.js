@@ -14,8 +14,7 @@ app.http('readMessage', {
             context.log('Authorized roles:', roles);
             // FIXME evaluate roles
 
-            const body = await request.text();
-            const data = JSON.parse(Buffer.from(body, "base64url").toString("utf-8"));
+            const body = await request.json();
 
             const ttl = data?.ttl;
             if (!ttl) {
