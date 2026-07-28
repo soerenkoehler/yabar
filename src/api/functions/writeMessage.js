@@ -33,8 +33,8 @@ app.http('writeMessage', {
 
             return {
                 status: 200,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                headers: { 'Content-Type': 'text/plain' },
+                body: Buffer.from(JSON.stringify({ ttl, id })).toString("base64url")
             };
 
         } catch (error) {

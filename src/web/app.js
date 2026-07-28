@@ -1,6 +1,8 @@
 import { setupAuth } from './auth.js';
 import { readMessage, writeMessage } from './api.js';
 
+const BASE64URL = { alphabet: 'base64url' };
+
 let config = {};
 window.config = config;
 
@@ -25,6 +27,12 @@ async function loadConfig() {
 
 async function initPage() {
     await loadConfig();
+
+    const a = "Hello World";
+    const b = new TextEncoder().encode(a).toBase64(BASE64URL);
+    const c = Uint8Array.fromBase64(b, BASE64URL);
+    console.log(`encoded=${b}`);
+    console.log(`decoded=${c}`);
 
     document
         .getElementById('g_id_onload')
@@ -82,15 +90,14 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const result = await writeMessage(durationInput.value, messageInput.value);
-            const messageId = result?.messageId ?? result?.message_id ?? result?.id;
-            const readUrl = `${window.location.origin}${window.location.pathname}?m=${encodeURIComponent(messageId || '')}`;
+            const messageId = await writeMessage(durationInput.value, messageInput.value);
+            const readUrl = `${window.location.origin}${window.location.pathname}?${encodeURIComponent(messageId || '')}`;
 
             statusMessage.style.color = 'green';
             statusMessage.innerHTML = '';
 
             const line1 = document.createElement('div');
-            line1.textContent = `Success: ${result?.message || '(missing)'}`;
+            line1.textContent = 'Success!';
 
             const line2 = document.createElement('div');
             line2.textContent = `messageId: ${messageId || '(missing)'}`;

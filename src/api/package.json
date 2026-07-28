@@ -1,7 +1,7 @@
 {
-  "name": "swa-api",
+  "name": "sharepass-api",
   "version": "1.0.0",
-  "description": "Azure Static Web Apps Managed Function API",
+  "description": "Sharepass Backend API",
   "main": "functions/*.js",
   "scripts": {
     "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",

@@ -14,14 +14,15 @@ app.http('readMessage', {
             context.log('Authorized roles:', roles);
             // FIXME evaluate roles
 
-            const body = await request.json();
+            const body = await request.text();
+            const data = JSON.parse(Buffer.from(body, "base64url").toString("utf-8"));
 
-            const ttl = body?.ttl;
+            const ttl = data?.ttl;
             if (!ttl) {
                 throwHttpError(400, "Missing 'ttl' property in request payload.");
             }
 
-            const value = body?.id;
+            const id = data?.id;
             if (!id) {
                 throwHttpError(400, "Missing 'id' property in request payload.");
             }
