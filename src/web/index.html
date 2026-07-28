@@ -27,6 +27,14 @@
 
         <form id="writeMessageForm">
             <div class="form-group">
+                <label for="durationInput">Expires In:</label>
+                <select id="durationInput" required>
+                    <option value="1">1 Hour</option>
+                    <option value="24">1 Day</option>
+                    <option value="168">1 Week</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="messageInput">Message Payload:</label>
                 <input type="text" id="messageInput" required placeholder="Enter text here...">
             </div>

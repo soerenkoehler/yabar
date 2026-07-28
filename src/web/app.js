@@ -1,4 +1,4 @@
-import { setupAuth, currentIdToken } from './auth.js';
+import { setupAuth } from './auth.js';
 import { readMessage, writeMessage } from './api.js';
 
 let config = {};
@@ -74,6 +74,7 @@ async function initPage() {
 
     writeMessageForm.addEventListener('submit', async (event) => {
         event.preventDefault();
+        const durationInput = document.getElementById('durationInput');
         const messageInput = document.getElementById('messageInput');
         const statusMessage = document.getElementById('statusMessage');
 
@@ -81,7 +82,7 @@ async function initPage() {
         statusMessage.textContent = 'Submitting...';
 
         try {
-            const result = await writeMessage(messageInput.value);
+            const result = await writeMessage(durationInput.value, messageInput.value);
             const messageId = result?.messageId ?? result?.message_id ?? result?.id;
             const readUrl = `${window.location.origin}${window.location.pathname}?m=${encodeURIComponent(messageId || '')}`;
 

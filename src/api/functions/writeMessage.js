@@ -15,11 +15,15 @@ app.http('writeMessage', {
             // FIXME evaluate roles
 
             const body = await request.json();
-            const ttl = body?.ttl;
-            const value = body?.value;
 
+            const ttl = body?.ttl;
+            if (!ttl) {
+                throwHttpError(400, "Missing 'ttl' property in request payload.");
+            }
+
+            const value = body?.value;
             if (!value) {
-                throwHttpError(400, 'Missing "value" property in request payload.');
+                throwHttpError(400, "Missing 'value' property in request payload.");
             }
 
             const client = await getTableClient();
@@ -30,10 +34,7 @@ app.http('writeMessage', {
             return {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: 'Message successfully stored.',
-                    messageId: id
-                })
+                body: JSON.stringify({ id })
             };
 
         } catch (error) {

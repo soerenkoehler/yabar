@@ -1,11 +1,18 @@
-export async function readMessage(id) {
+import { currentIdToken } from './auth.js';
+
+export async function readMessage(ttl, id) {
     const response = await fetch(
         `${window.config.api_hostname}/api/readMessage?id=${encodeURIComponent(id)}`,
         {
-            method: 'GET',
+            method: 'POST',
             headers: currentIdToken ? {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${currentIdToken}`
-            } : {}
+            } : {},
+            body: JSON.stringify({
+                ttl: ttl,
+                id: id
+            })
         }
     );
 

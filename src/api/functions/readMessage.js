@@ -4,7 +4,7 @@ import { throwHttpError } from './http.js';
 import { getTableClient } from './tableClient.js';
 
 app.http('readMessage', {
-    methods: ['GET'],
+    methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
         context.log(`Processing message read request for URL: "${request.url}"`);
@@ -14,26 +14,32 @@ app.http('readMessage', {
             context.log('Authorized roles:', roles);
             // FIXME evaluate roles
 
-            const url = new URL(request.url);
-            const messageId = url.searchParams.get('id');
+            const body = await request.json();
 
-            if (!messageId) {
-                throwHttpError(400, 'Missing "id" query parameter.');
+            const ttl = body?.ttl;
+            if (!ttl) {
+                throwHttpError(400, "Missing 'ttl' property in request payload.");
+            }
+
+            const value = body?.id;
+            if (!id) {
+                throwHttpError(400, "Missing 'id' property in request payload.");
             }
 
             const client = await getTableClient();
 
             let value;
             try {
-                value = await client.readMessage(client.partitionKey, messageId);
+                value = await client.readMessage(ttl, id);
             } catch (error) {
+                // FIXME explicitly check for existence in advance
                 if (error.message.includes('not found')) {
-                    throwHttpError(404, `Message with id "${messageId}" not found.`);
+                    throwHttpError(404, `Message with id "${id}" not found.`);
                 }
                 throw error;
             }
 
-            await client.tableClient.deleteEntity(client.partitionKey, messageId);
+            await client.tableClient.deleteEntity(ttl, id);
 
             return {
                 status: 200,
