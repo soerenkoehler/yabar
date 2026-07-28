@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 let cached = null;
 
-function formatTimestamp() {
+const formatTimestamp = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -12,13 +12,13 @@ function formatTimestamp() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-}
+};
 
-function generateRowKey() {
+const generateRowKey = () => {
     return `${formatTimestamp()}_${randomUUID()}`;
-}
+};
 
-export async function getTableClient() {
+export const getTableClient = async () => {
     if (cached) {
         return cached;
     }
@@ -37,7 +37,7 @@ export async function getTableClient() {
         tableClient,
         tableName,
 
-        async writeMessage(pk, message) {
+        writeMessage: async (pk, message) => {
             const rowKey = generateRowKey();
             await this.tableClient.createEntity({
                 partitionKey: pk,
@@ -48,7 +48,7 @@ export async function getTableClient() {
             return rowKey;
         },
 
-        async readMessage(pk, rowKey) {
+        readMessage: async (pk, rowKey) => {
             try {
                 const entity = await this.tableClient.getEntity(pk, rowKey);
                 return entity.value ?? '';
@@ -66,12 +66,12 @@ export async function getTableClient() {
 }
 
 // Standalone function exports for convenience
-export async function writeMessage(partitionKey, message) {
+export const writeMessage = async (partitionKey, message) => {
     const client = await getTableClient();
     return client.writeMessage(partitionKey, message);
-}
+};
 
-export async function readMessage(partitionKey, rowKey) {
+export const readMessage = async (partitionKey, rowKey) => {
     const client = await getTableClient();
     return client.readMessage(partitionKey, rowKey);
-}
+};

@@ -5,15 +5,15 @@ import { readMessage, writeMessage } from './api.js';
 let config = {};
 window.config = config;
 
-function createLink(element, data) {
+const createLink = (element, data) => {
     const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
     const shortToken = token.length > 6 ? `${token.slice(0, 6)}...` : token;
 
     element.href = `${window.location.origin}?${token}`;
     element.textContent = `${window.location.origin}?${shortToken}`;
-}
+};
 
-async function loadConfig() {
+const loadConfig = async () => {
     try {
         const response = await fetch('/config.json', { cache: 'no-store' });
         if (!response.ok) {
@@ -26,9 +26,9 @@ async function loadConfig() {
         config = {};
         window.config = config;
     }
-}
+};
 
-async function initPage() {
+const initPage = async () => {
     await loadConfig();
 
     document

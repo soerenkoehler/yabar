@@ -1,6 +1,6 @@
 import { currentIdToken } from './auth.js';
 
-export async function readMessage(ttl, id) {
+export const readMessage = async (ttl, id) => {
     const response = await fetch(
         `${window.config.api_hostname}/api/readMessage`,
         {
@@ -19,9 +19,9 @@ export async function readMessage(ttl, id) {
     }
 
     return response.text();
-}
+};
 
-export async function writeMessage(ttl, value) {
+export const writeMessage = async (ttl, value) => {
     const response = await fetch(
         `${window.config.api_hostname}/api/writeMessage`,
         {
@@ -40,4 +40,4 @@ export async function writeMessage(ttl, value) {
     }
 
     return response.text();
-}
+};

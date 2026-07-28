@@ -3,7 +3,7 @@ export let currentIdToken = null;
 let currentUserHint = null;
 let authStateChangedListener = null;
 
-function notifyAuthStateChanged() {
+const notifyAuthStateChanged = () => {
     if (!authStateChangedListener) {
         return;
     }
@@ -13,9 +13,9 @@ function notifyAuthStateChanged() {
         userHint: currentUserHint,
         idToken: currentIdToken
     });
-}
+};
 
-function parseJwt(token) {
+const parseJwt = (token) => {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -29,9 +29,9 @@ function parseJwt(token) {
     } catch {
         return null;
     }
-}
+};
 
-function setAuthButtonVisibility(isLoggedIn) {
+const setAuthButtonVisibility = (isLoggedIn) => {
     const loginButton = document.querySelector('.g_id_signin');
     const logoutButton = document.getElementById('logoutButton');
 
@@ -42,27 +42,27 @@ function setAuthButtonVisibility(isLoggedIn) {
     if (logoutButton) {
         logoutButton.style.display = isLoggedIn ? 'inline-block' : 'none';
     }
-}
+};
 
-function setLoggedIn(username, userHint) {
+const setLoggedIn = (username, userHint) => {
     const authStatus = document.getElementById('authStatus');
     authStatus.textContent = `logged in as ${username}`;
     setAuthButtonVisibility(true);
     currentUserHint = userHint || null;
     notifyAuthStateChanged();
-}
+};
 
-function setLoggedOut() {
+const setLoggedOut = () => {
     const authStatus = document.getElementById('authStatus');
     authStatus.textContent = 'Not logged in';
     setAuthButtonVisibility(false);
     currentUserHint = null;
     currentIdToken = null;
     notifyAuthStateChanged();
-}
+};
 
 // must be global for data-callback="handleCredentialResponse"
-window.handleGoogleGsiResponse = async function handleCredentialResponse(response) {
+window.handleGoogleGsiResponse = async (response) => {
     const payload = parseJwt(response.credential);
     if (!payload) {
         setLoggedOut();
@@ -75,7 +75,7 @@ window.handleGoogleGsiResponse = async function handleCredentialResponse(respons
     setLoggedIn(`${userName} (${userHint})`, userHint);
 };
 
-function loadGoogleGsiScript() {
+const loadGoogleGsiScript = () => {
     return new Promise((resolve, reject) => {
         if (document.querySelector('script[data-google-gsi="true"]')) {
             resolve();
@@ -91,9 +91,9 @@ function loadGoogleGsiScript() {
         script.onerror = () => reject(new Error('Failed to load Google GSI script'));
         document.head.appendChild(script);
     });
-}
+};
 
-export function setupAuth(listener) {
+export const setupAuth = (listener) => {
     const logoutButton = document.getElementById('logoutButton');
     if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
         return;
