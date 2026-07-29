@@ -1,9 +1,9 @@
 import { setupAuth } from './auth.js';
 import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
-import { getExpirationOptions, readMessage, writeMessage } from './api.js';
+import { getApiClient } from './api.js';
 
 let config = {};
-window.config = config;
+let urlQueryToken = {};
 
 const createLink = (element, data) => {
     const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
@@ -20,11 +20,9 @@ const loadConfig = async () => {
             throw new Error(`Failed to load config.json (${response.status})`);
         }
         config = await response.json();
-        window.config = config;
     } catch (error) {
         console.error('Could not load config.json:', error);
         config = {};
-        window.config = config;
     }
 };
 
@@ -40,113 +38,168 @@ const renderExpirationOptions = (selectElement, options) => {
 };
 
 const initPage = async () => {
-    const q = window.location.search.slice(1);
-    const readSection  = document.querySelector('#readMessageSection');
-    const writeSection = document.querySelector('#writeMessageSection');
-    const writeMessageTwoStepLink = writeSection.querySelector('[data-role="two-step-link"]');
-    const writeMessageKeyText = writeSection.querySelector('[data-role="key-text"]');
-    const writeMessageOneClickLink = writeSection.querySelector('[data-role="one-click-link"]');
-    const writeMessageForm = writeSection.querySelector('#writeMessageForm');
-    const expirationInput = writeMessageForm.querySelector('#expirationInput');
+    const topMenu = document.getElementById('topMenu');
+
+    const mainPage = document.getElementById('mainPage');
+    const mainPageStatus = document.getElementById('mainPageStatus');
+
+    const topMenuModeWrite = document.getElementById('topMenuModeWrite');
+    const topMenuModeRead = document.getElementById('topMenuModeRead');
+
+    const readMessageInputForm = document.getElementById('readMessageInputForm');
+    const readMessageInputMessageId = document.getElementById('readMessageInputMessageId');
+    const readMessageInputKey = document.getElementById('readMessageInputKey');
+    const readMessageOutput = document.getElementById('readMessageOutput');
+
+    const writeMessageInputForm = document.getElementById('writeMessageInputForm');
+    const writeMessageInputText = document.getElementById('messageInput');
+    const writeMessageInputExpiration = document.getElementById('writeMessageInputExpiration');
+    const writeMessageOutputUrlTwoStep = document.getElementById('writeMessageOutputUrlTwoStep');
+    const writeMessageOutputTwoStepKey = document.getElementById('writeMessageOutputKeyTwoStep');
+    const writeMessageOutputUrlOneClick = document.getElementById('writeMessageOutputUrlOneClick');
 
     let expirationOptionsLoaded = false;
+    let isAuthenticated = false;
 
-    await loadConfig();
+    const setAuthenticated = (authenticated) => {
+        isAuthenticated = authenticated;
+        topMenu.classList.remove(
+            'auth-logged-in',
+            'auth-logged-out'
+        );
+        topMenu.classList.add(authenticated ? 'auth-logged-in' : 'auth-logged-out');
+    };
+
+    const setGlobalState = (stateClass = '', statusText = '') => {
+        mainPage.classList.remove(
+            'state-idle',
+            'state-input',
+            'state-submitting',
+            'state-error',
+            'state-success'
+        );
+        if (stateClass) {
+            mainPage.classList.add(stateClass);
+        }
+        mainPageStatus.textContent = statusText;
+    };
+
+    const setGlobalMode = (modeClass = '') => {
+        mainPage.classList.remove(
+            'mode-reading',
+            'mode-writing'
+        );
+        if (modeClass) {
+            mainPage.classList.add(modeClass);
+        }
+    };
+
+    const setInitialMode = () => {
+        const urlQuery = decodeURIComponent(window.location.search.slice(1));
+
+        if (urlQuery) {
+            readMessageInputMessageId.value = urlQuery;
+
+            const urlQueryToken = JSON.parse(fromSaltedBase64(urlQuery));
+            if (urlQueryToken?.key) {
+                readMessageInputKey.value = '';
+                readMessageInputKey.disabled = true;
+                readMessageInputKey.placeholder = 'one click token';
+            }
+
+            setGlobalMode('mode-reading');
+        } else {
+            setGlobalMode('mode-writing');
+        }
+    };
+
+    const switchMode = (modeClass) => {
+        if (!isAuthenticated) {
+            return;
+        }
+
+        readMessageInputForm.reset();
+        readMessageInputKey.value = '';
+        readMessageInputKey.disabled = false;
+        readMessageInputKey.placeholder = 'Enter base64 key...';
+
+        writeMessageInputForm.reset();
+
+        setGlobalMode(modeClass);
+        setGlobalState('state-input');
+    };
+
+    topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
+    topMenuModeRead.addEventListener('click', () => void switchMode('mode-reading'));
 
     const ensureExpirationOptionsLoaded = async () => {
         if (expirationOptionsLoaded) {
             return;
         }
 
-        const expirationOptions = await getExpirationOptions();
-        renderExpirationOptions(expirationInput, expirationOptions);
+        const client = await getApiClient(config.api_hostname);
+        const expirationOptions = await client.getExpirationOptions();
+        renderExpirationOptions(writeMessageInputExpiration, expirationOptions);
         expirationOptionsLoaded = true;
     };
 
+    await loadConfig();
+
     setupAuth(config.auth_google_client_id, async ({ isLoggedIn }) => {
-        if (!isLoggedIn) {
-            writeSection.classList.add('hidden');
-            readSection.classList.add('hidden');
-            return;
-        }
-
-        try {
-            await ensureExpirationOptionsLoaded();
-        } catch (error) {
-            console.error('Could not load expiration options:', error);
-            writeSection.classList.add('hidden');
-            readSection.classList.add('hidden');
-            return;
-        }
-
-        if (q) {
-            writeSection.classList.add('hidden');
-            readSection.classList.remove('hidden');
-        } else {
-            writeSection.classList.remove('hidden');
-            readSection.classList.add('hidden');
+        setGlobalState('state-idle');
+        setAuthenticated(isLoggedIn);
+        if (isLoggedIn) {
+            try {
+                await ensureExpirationOptionsLoaded();
+                setInitialMode();
+                setGlobalState('state-input');
+            } catch (error) {
+                setGlobalState('state-error', `Could not load expiration options: ${error}`);
+            }
         }
     });
 
-    const setGlobalState = (stateClass = '', statusText = '') => {
-        const globalStatus = document.querySelector('#globalStatus');
-        const globalStatusText = document.querySelector('#globalStatusText');
-
-        globalStatus.classList.remove('is-submitting', 'is-error', 'is-success');
-        if (stateClass) {
-            globalStatus.classList.add(stateClass);
-        }
-        globalStatusText.textContent = statusText;
-    }
-
-    if (q) {
-        const showReadButton = document.getElementById('showReadButton');
-        const readMessageOutput = document.getElementById('readMessageOutput');
-
-        showReadButton.addEventListener('click', async () => {
-            setGlobalState('is-submitting', 'Loading...');
-
-            try {
-                const messageToken = JSON.parse(fromSaltedBase64(q));
-                const expiration = messageToken.expiration;
-                const value = await readMessage(expiration, messageToken.id);
-
-                readMessageOutput.textContent = value;
-
-                setGlobalState('is-success');
-
-            } catch (error) {
-                setGlobalState('is-error', error.message)
-            }
-        });
-    }
-
-    writeMessageForm.addEventListener('submit', async (event) => {
+    readMessageInputForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const inputMsg = document.getElementById('messageInput');
 
-        setGlobalState('is-submitting', 'Submitting...');
+        setGlobalState('state-submitting', 'Loading...');
 
         try {
-            const id = await writeMessage(expirationInput.value, inputMsg.value);
+            const client = await getApiClient(config.api_hostname);
+            const value = await client.readMessage(expiration, readMessageInputMessageId.value);
+            readMessageOutput.textContent = value;
+            setGlobalState('state-success');
+        } catch (error) {
+            setGlobalState('state-error', error.message)
+        }
+    });
+
+    writeMessageInputForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        setGlobalState('state-submitting', 'Submitting...');
+
+        try {
+            const client = await getApiClient(config.api_hostname);
+            const id = await client.writeMessage(writeMessageInputExpiration.value, writeMessageInputText.value);
             const key = crypto.randomUUID();
 
-            createLink(writeMessageTwoStepLink, {
-                expiration: expirationInput.value, id
+            createLink(writeMessageOutputUrlTwoStep, {
+                expiration: writeMessageInputExpiration.value, id
             });
 
-            writeMessageKeyText.textContent = toSaltedBase64(key)
+            writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key)
 
-            createLink(writeMessageOneClickLink, {
-                expiration: expirationInput.value, id, key
+            createLink(writeMessageOutputUrlOneClick, {
+                expiration: writeMessageInputExpiration.value, id, key
             });
 
-            inputMsg.value = '';
-            setGlobalState('is-success');
+            writeMessageInputText.value = '';
+            setGlobalState('state-success');
 
         } catch (error) {
             setGlobalState(
-                'is-error',
+                'state-error',
                 error.message.startsWith('Error (')
                     ? error.message
                     : `Network error occurred: ${error.message}`

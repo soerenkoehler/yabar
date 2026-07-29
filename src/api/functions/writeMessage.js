@@ -26,10 +26,10 @@ app.http('writeMessage', {
                 throwHttpError(400, "Missing 'value' property in request payload.");
             }
 
-            const client = await getTableClient();
 
             let id;
             try {
+                const client = await getTableClient();
                 id = await client.writeMessage(expiration, value);
             } catch (error) {
                 if (error.message.includes('Unsupported expiration')) {

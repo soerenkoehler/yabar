@@ -54,7 +54,7 @@ export const getTableClient = async () => {
         tableClient,
         tableName,
 
-        getExpirationOptions: async () => {
+        getExpirationOptions: () => {
             return EXPIRATION_OPTIONS.map((option) => ({ ...option }));
         },
 
@@ -86,20 +86,4 @@ export const getTableClient = async () => {
 
     cached = client;
     return cached;
-}
-
-// Standalone function exports for convenience
-export const getExpirationOptions = async () => {
-    const client = await getTableClient();
-    return client.getExpirationOptions();
-};
-
-export const writeMessage = async (expiration, message) => {
-    const client = await getTableClient();
-    return client.writeMessage(expiration, message);
-};
-
-export const readMessage = async (expiration, rowKey) => {
-    const client = await getTableClient();
-    return client.readMessage(expiration, rowKey);
 };

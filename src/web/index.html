@@ -11,40 +11,49 @@
             margin: 2rem;
         }
 
-        .is-submitting #readMessageOutput,
-        .is-submitting #writeMessageOutput,
-        .is-error #readMessageOutput,
-        .is-error #writeMessageOutput {
+        .auth-logged-in #topMenuLogin,
+        .auth-logged-out #topMenuMain {
             display: none
         }
 
-        .is-success #readMessageOutput,
-        .is-success #writeMessageOutput {
+        .auth-logged-in #topMenuMain,
+        .auth-logged-out #topMenuLogin {
             display: block
         }
 
-        .is-submitting #globalStatusText,
-        .is-error #globalStatusText {
+        .mode-reading #writeMessageSection,
+        .mode-writing #readMessageSection,
+        .state-idle #mainPageStatus,
+        .state-idle #readMessageSection,
+        .state-idle #writeMessageSection,
+        .state-input #readMessageOutput,
+        .state-input #writeMessageOutput,
+        .state-submitting #readMessageOutput,
+        .state-submitting #writeMessageOutput,
+        .state-error #readMessageOutput,
+        .state-error #writeMessageOutput,
+        .state-success #mainPageStatus {
+            display: none
+        }
+
+        .state-input .mode-reading #readMessageSection,
+        .state-input .mode-writing #writeMessageSection,
+        .state-submitting #mainPageStatus,
+        .state-error #mainPageStatus,
+        .state-success #readMessageOutput,
+        .state-success #writeMessageOutput {
             display: block
         }
 
-        .is-error #globalStatusText {
+        .state-error #mainPageStatus {
             color: red
-        }
-
-        .is-success #globalStatusText {
-            display: none
         }
 
         #readMessageOutput,
         #writeMessageOutput,
-        #globalStatusText {
+        #mainPageStatus {
             margin-top: 1rem;
             font-weight: bold
-        }
-
-        .hidden {
-            display: none;
         }
 
         .form-group {
@@ -57,7 +66,9 @@
             font-weight: bold;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="password"],
+        select {
             width: 100%;
             padding: 0.5rem;
             max-width: 400px;
@@ -72,20 +83,28 @@
 </head>
 
 <body>
-    <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
-    <div class="g_id_signin" data-type="standard"></div>
+    <div id="topMenu">
+        <div id="topMenuLogin">
+            <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
+            <div id="loginButton" class="g_id_signin" data-type="standard"></div>
+        </div>
 
-    <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
-    <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
+        <div id="topMenuMain">
+            <button id="topMenuModeWrite" type="button">New Message</button>
+            <button id="topMenuModeRead" type="button">Read Message</button>
+            <div id="authStatus">Not logged in</div>
+            <button id="logoutButton" type="button">Logout</button>
+        </div>
+    </div>
 
-    <div id="globalStatus">
-        <section id="writeMessageSection" class="hidden">
+    <div id="mainPage">
+        <section id="writeMessageSection">
             <h1>Write Message</h1>
 
-            <form id="writeMessageForm">
+            <form id="writeMessageInputForm">
                 <div class="form-group">
-                    <label for="expirationInput">Expires In:</label>
-                    <select id="expirationInput" required>
+                    <label for="writeMessageInputExpiration">Expires In:</label>
+                    <select id="writeMessageInputExpiration" required>
                         <option value="" disabled selected>Loading options...</option>
                     </select>
                 </div>
@@ -96,29 +115,41 @@
                 <button type="submit">Send</button>
             </form>
 
-            <div id="writeMessageOutput" class="hidden">
+            <div id="writeMessageOutput">
                 <div>
-                    Message URL (no key): <a data-role="two-step-link" href="" target="_blank"
-                        rel="noreferrer noopener"></a>
+                    Message URL (no key):
+                    <a id="writeMessageOutputUrlTwoStep" href="" target="_blank" rel="noreferrer noopener"></a>
                 </div>
                 <div>
-                    Key: <span data-role="key-text"></span>
+                    Key:
+                    <span id="writeMessageOutputKeyTwoStep"></span>
                 </div>
                 <div>
-                    One-Click URL: <a data-role="one-click-link" href="" target="_blank" rel="noreferrer noopener"></a>
+                    One-Click URL:
+                    <a id="writeMessageOutputUrlOneClick" href="" target="_blank" rel="noreferrer noopener"></a>
                 </div>
             </div>
         </section>
 
-        <section id="readMessageSection" class="hidden">
+        <section id="readMessageSection">
             <h1>Read Message</h1>
 
-            <button id="showReadButton" type="button">Show</button>
+            <form id="readMessageInputForm">
+                <div class="form-group">
+                    <label for="readMessageInputMessageId">Message ID (base64):</label>
+                    <input type="text" id="readMessageInputMessageId" required placeholder="Enter base64 messageId...">
+                </div>
+                <div class="form-group">
+                    <label for="readMessageInputKey">Key (base64):</label>
+                    <input type="password" id="readMessageInputKey" placeholder="Enter base64 key...">
+                </div>
+                <button type="submit">Show</button>
+            </form>
 
             <div id="readMessageOutput"></div>
         </section>
 
-        <span id="globalStatusText"></span>
+        <span id="mainPageStatus"></span>
     </div>
 </body>
 

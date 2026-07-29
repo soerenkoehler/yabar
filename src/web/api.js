@@ -1,5 +1,7 @@
 import { currentIdToken } from './auth.js';
 
+let cached = null;
+
 const getRequestHeaders = () => {
     return currentIdToken ? {
         'Content-Type': 'application/json',
@@ -7,57 +9,68 @@ const getRequestHeaders = () => {
     } : {};
 };
 
-export const getExpirationOptions = async () => {
-    const response = await fetch(
-        `${window.config.api_hostname}/api/getExpirationOptions`,
-        {
-            method: 'GET',
-            headers: currentIdToken ? {
-                'Authorization': `Bearer ${currentIdToken}`
-            } : {}
-        }
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error (${response.status}): ${errorText}`);
+export const getApiClient = async (api_hostname) => {
+    if (cached) {
+        return cached;
     }
 
-    return response.json();
-};
+    const client = {
+        getExpirationOptions: async () => {
+            const response = await fetch(
+                `${api_hostname}/api/getExpirationOptions`,
+                {
+                    method: 'GET',
+                    headers: currentIdToken ? {
+                        'Authorization': `Bearer ${currentIdToken}`
+                    } : {}
+                }
+            );
 
-export const readMessage = async (expiration, id) => {
-    const response = await fetch(
-        `${window.config.api_hostname}/api/readMessage`,
-        {
-            method: 'POST',
-            headers: getRequestHeaders(),
-            body: JSON.stringify({ expiration, id })
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error (${response.status}): ${errorText}`);
+            }
+
+            return response.json();
+        },
+
+        readMessage: async (expiration, id) => {
+            const response = await fetch(
+                `${api_hostname}/api/readMessage`,
+                {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify({ expiration, id })
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error (${response.status}): ${errorText}`);
+            }
+
+            return response.text();
+        },
+
+        writeMessage: async (expiration, value) => {
+            const response = await fetch(
+                `${api_hostname}/api/writeMessage`,
+                {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify({ expiration, value })
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error (${response.status}): ${errorText}`);
+            }
+
+            return response.text();
         }
-    );
+    };
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error (${response.status}): ${errorText}`);
-    }
-
-    return response.text();
-};
-
-export const writeMessage = async (expiration, value) => {
-    const response = await fetch(
-        `${window.config.api_hostname}/api/writeMessage`,
-        {
-            method: 'POST',
-            headers: getRequestHeaders(),
-            body: JSON.stringify({ expiration, value })
-        }
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error (${response.status}): ${errorText}`);
-    }
-
-    return response.text();
+    cached = client;
+    return cached;
 };

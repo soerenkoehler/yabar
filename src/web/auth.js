@@ -3,6 +3,12 @@ export let currentIdToken = null;
 let currentUserHint = null;
 let authStateChangedListener = null;
 
+const loginDataBinder = document.getElementById('g_id_onload');
+const loginButton = document.getElementById('loginButton');
+const logoutButton = document.getElementById('logoutButton');
+const authStatus = document.getElementById('authStatus');
+// FIXME const loginButton = document.querySelector('.g_id_signin');
+
 const notifyAuthStateChanged = () => {
     if (!authStateChangedListener) {
         return;
@@ -15,26 +21,13 @@ const notifyAuthStateChanged = () => {
     });
 };
 
-const parseJwt = (token) => {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-            atob(base64)
-                .split('')
-                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                .join('')
-        );
-        return JSON.parse(jsonPayload);
-    } catch {
-        return null;
-    }
-};
+const parseJwt = (token) => JSON.parse(
+    new TextDecoder().decode(
+        Uint8Array.fromBase64(token.split('.')[1], { alphabet: 'base64url' })
+    )
+);
 
 const setAuthButtonVisibility = (isLoggedIn) => {
-    const loginButton = document.querySelector('.g_id_signin');
-    const logoutButton = document.getElementById('logoutButton');
-
     if (loginButton) {
         loginButton.style.display = isLoggedIn ? 'none' : '';
     }
@@ -45,7 +38,6 @@ const setAuthButtonVisibility = (isLoggedIn) => {
 };
 
 const setLoggedIn = (username, userHint) => {
-    const authStatus = document.getElementById('authStatus');
     authStatus.textContent = `logged in as ${username}`;
     setAuthButtonVisibility(true);
     currentUserHint = userHint || null;
@@ -53,7 +45,6 @@ const setLoggedIn = (username, userHint) => {
 };
 
 const setLoggedOut = () => {
-    const authStatus = document.getElementById('authStatus');
     authStatus.textContent = 'Not logged in';
     setAuthButtonVisibility(false);
     currentUserHint = null;
@@ -94,15 +85,12 @@ const loadGoogleGsiScript = () => {
 };
 
 export const setupAuth = (client_id, listener) => {
-    const logoutButton = document.getElementById('logoutButton');
     // FIXME check if the test is necessary in this form
     if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
         return;
     }
 
-    document
-        .getElementById('g_id_onload')
-        .setAttribute('data-client_id', `${client_id || ''}`);
+    loginDataBinder.setAttribute('data-client_id', `${client_id || ''}`);
 
     loadGoogleGsiScript();
 

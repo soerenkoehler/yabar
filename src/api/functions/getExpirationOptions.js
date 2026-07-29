@@ -1,6 +1,6 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
-import { getExpirationOptions } from './tableClient.js';
+import { getTableClient } from './tableClient.js';
 
 app.http('getExpirationOptions', {
     methods: ['GET'],
@@ -13,7 +13,8 @@ app.http('getExpirationOptions', {
             context.log('Authorized roles:', roles);
             // FIXME evaluate roles
 
-            const options = await getExpirationOptions();
+            const client = await getTableClient();
+            const options = client.getExpirationOptions();
 
             return {
                 status: 200,

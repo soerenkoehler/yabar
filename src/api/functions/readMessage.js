@@ -25,11 +25,20 @@ app.http('readMessage', {
             if (!id) {
                 throwHttpError(400, "Missing 'id' property in request payload.");
             }
+
             const client = await getTableClient();
 
-            let value;
             try {
-                value = await client.readMessage(expiration, id);
+                const value = await client.readMessage(expiration, id);
+
+                // FIXME create deleteEntity-route or include in readMessage() backend
+                await client.tableClient.deleteEntity(String(expiration).trim(), id);
+
+                return {
+                    status: 200,
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+                    body: value
+                };
             } catch (error) {
                 if (error.message.includes('Unsupported expiration')) {
                     throwHttpError(400, error.message);
@@ -40,14 +49,6 @@ app.http('readMessage', {
                 }
                 throw error;
             }
-
-            await client.tableClient.deleteEntity(String(expiration).trim(), id);
-
-            return {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                body: value
-            };
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);
 
