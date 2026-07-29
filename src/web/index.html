@@ -1,28 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sharepass</title>
     <style>
-        body { font-family: sans-serif; margin: 2rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 0.5rem; max-width: 400px; }
-        button { padding: 0.5rem 1rem; cursor: pointer; }
-        #readMessageOutput { margin-top: 1rem; font-weight: bold; }
-        .write-message-feedback { margin-top: 1rem; font-weight: bold; }
-        .write-message-status,
-        .write-message-results { display: none; }
-        .write-message-section.is-submitting .write-message-status,
-        .write-message-section.is-error .write-message-status,
-        .write-message-section.is-success .write-message-results { display: block; }
-        .write-message-url,
-        .write-message-one-click { margin-top: 0.5rem; }
-        .hidden { display: none; }
+        body {
+            font-family: sans-serif;
+            margin: 2rem;
+        }
+
+        .is-submitting #readMessageOutput,
+        .is-submitting #writeMessageOutput,
+        .is-error #readMessageOutput,
+        .is-error #writeMessageOutput {
+            display: none
+        }
+
+        .is-success #readMessageOutput,
+        .is-success #writeMessageOutput {
+            display: block
+        }
+
+        .is-submitting #globalStatusText,
+        .is-error #globalStatusText {
+            display: block
+        }
+
+        .is-error #globalStatusText {
+            color: red
+        }
+
+        .is-success #globalStatusText {
+            display: none
+        }
+
+        #readMessageOutput,
+        #writeMessageOutput,
+        #globalStatusText {
+            margin-top: 1rem;
+            font-weight: bold
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            max-width: 400px;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
     </style>
     <script type="module" src="./app.js"></script>
 </head>
+
 <body>
     <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
     <div class="g_id_signin" data-type="standard"></div>
@@ -30,45 +78,48 @@
     <div id="authStatus" style="margin-top: 0.75rem;">Not logged in</div>
     <button id="logoutButton" type="button" style="display: none; margin-top: 0.5rem;">Logout</button>
 
-    <section id="writeMessageSection" class="write-message-section">
-        <h1>Write Message</h1>
+    <div id="globalStatus">
+        <section id="writeMessageSection" class="hidden">
+            <h1>Write Message</h1>
 
-        <form id="writeMessageForm">
-            <div class="form-group">
-                <label for="durationInput">Expires In:</label>
-                <select id="durationInput" required>
-                    <option value="1">1 Hour</option>
-                    <option value="24">1 Day</option>
-                    <option value="168">1 Week</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="messageInput">Message Payload:</label>
-                <input type="text" id="messageInput" required placeholder="Enter text here...">
-            </div>
-            <button type="submit">Send</button>
-        </form>
-
-        <div class="write-message-feedback">
-            <div class="write-message-status" data-role="status"></div>
-            <div class="write-message-results">
-                <div class="write-message-url">
-                    Message URL (no key): <a data-role="two-step-link" href="" target="_blank" rel="noreferrer noopener"></a>
+            <form id="writeMessageForm">
+                <div class="form-group">
+                    <label for="expirationInput">Expires In:</label>
+                    <select id="expirationInput" required>
+                        <option value="" disabled selected>Loading options...</option>
+                    </select>
                 </div>
-                <div class="write-message-key">
+                <div class="form-group">
+                    <label for="messageInput">Message Payload:</label>
+                    <input type="text" id="messageInput" required placeholder="Enter text here...">
+                </div>
+                <button type="submit">Send</button>
+            </form>
+
+            <div id="writeMessageOutput" class="hidden">
+                <div>
+                    Message URL (no key): <a data-role="two-step-link" href="" target="_blank"
+                        rel="noreferrer noopener"></a>
+                </div>
+                <div>
                     Key: <span data-role="key-text"></span>
                 </div>
-                <div class="write-message-one-click">
+                <div>
                     One-Click URL: <a data-role="one-click-link" href="" target="_blank" rel="noreferrer noopener"></a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="readMessageSection" class="hidden">
-        <h1>Read Message</h1>
-        <button id="showReadButton" type="button">Show</button>
-        <div id="readMessageOutput"></div>
-    </section>
+        <section id="readMessageSection" class="hidden">
+            <h1>Read Message</h1>
+
+            <button id="showReadButton" type="button">Show</button>
+
+            <div id="readMessageOutput"></div>
+        </section>
+
+        <span id="globalStatusText"></span>
+    </div>
 </body>
+
 </html>

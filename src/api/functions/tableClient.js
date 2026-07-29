@@ -3,6 +3,14 @@ import { randomUUID } from 'node:crypto';
 
 let cached = null;
 
+const EXPIRATION_OPTIONS = Object.freeze([
+    { value: '1', label: '1 Hour' },
+    { value: '24', label: '1 Day' },
+    { value: '168', label: '1 Week' },
+]);
+
+const ALLOWED_EXPIRATIONS = new Set(EXPIRATION_OPTIONS.map((option) => option.value));
+
 const formatTimestamp = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -16,6 +24,16 @@ const formatTimestamp = () => {
 
 const generateRowKey = () => {
     return `${formatTimestamp()}_${randomUUID()}`;
+};
+
+const validateExpiration = (expiration) => {
+    const normalized = String(expiration ?? '').trim();
+    if (!ALLOWED_EXPIRATIONS.has(normalized)) {
+        throw new Error(
+            `Unsupported expiration \"${expiration}\". Allowed values: ${[...ALLOWED_EXPIRATIONS].join(', ')}`
+        );
+    }
+    return normalized;
 };
 
 export const getTableClient = async () => {
@@ -36,10 +54,15 @@ export const getTableClient = async () => {
         tableClient,
         tableName,
 
-        writeMessage: async (pk, message) => {
+        getExpirationOptions: async () => {
+            return EXPIRATION_OPTIONS.map((option) => ({ ...option }));
+        },
+
+        writeMessage: async (expiration, message) => {
+            const partitionKey = validateExpiration(expiration);
             const rowKey = generateRowKey();
             await tableClient.createEntity({
-                partitionKey: pk,
+                partitionKey,
                 rowKey,
                 value: String(message),
                 createdAt: new Date().toISOString()
@@ -47,9 +70,10 @@ export const getTableClient = async () => {
             return rowKey;
         },
 
-        readMessage: async (pk, rowKey) => {
+        readMessage: async (expiration, rowKey) => {
+            const partitionKey = validateExpiration(expiration);
             try {
-                const entity = await tableClient.getEntity(pk, rowKey);
+                const entity = await tableClient.getEntity(partitionKey, rowKey);
                 return entity.value ?? '';
             } catch (error) {
                 if (error?.statusCode === 404) {
@@ -65,12 +89,17 @@ export const getTableClient = async () => {
 }
 
 // Standalone function exports for convenience
-export const writeMessage = async (partitionKey, message) => {
+export const getExpirationOptions = async () => {
     const client = await getTableClient();
-    return client.writeMessage(partitionKey, message);
+    return client.getExpirationOptions();
 };
 
-export const readMessage = async (partitionKey, rowKey) => {
+export const writeMessage = async (expiration, message) => {
     const client = await getTableClient();
-    return client.readMessage(partitionKey, rowKey);
+    return client.writeMessage(expiration, message);
+};
+
+export const readMessage = async (expiration, rowKey) => {
+    const client = await getTableClient();
+    return client.readMessage(expiration, rowKey);
 };

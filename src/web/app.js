@@ -1,6 +1,6 @@
 import { setupAuth } from './auth.js';
 import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
-import { readMessage, writeMessage } from './api.js';
+import { getExpirationOptions, readMessage, writeMessage } from './api.js';
 
 let config = {};
 window.config = config;
@@ -28,19 +28,52 @@ const loadConfig = async () => {
     }
 };
 
+const renderExpirationOptions = (selectElement, options) => {
+    selectElement.innerHTML = '';
+
+    for (const option of options) {
+        const optionElement = document.createElement('option');
+        optionElement.value = String(option.value);
+        optionElement.textContent = String(option.label);
+        selectElement.appendChild(optionElement);
+    }
+};
+
 const initPage = async () => {
-    const readSection = document.getElementById('readMessageSection');
-    const writeSection = document.getElementById('writeMessageSection');
-    const writeMessageForm = document.getElementById('writeMessageForm');
-    const writeMessageStatus = writeSection.querySelector('[data-role="status"]');
+    const q = window.location.search.slice(1);
+    const readSection  = document.querySelector('#readMessageSection');
+    const writeSection = document.querySelector('#writeMessageSection');
     const writeMessageTwoStepLink = writeSection.querySelector('[data-role="two-step-link"]');
     const writeMessageKeyText = writeSection.querySelector('[data-role="key-text"]');
     const writeMessageOneClickLink = writeSection.querySelector('[data-role="one-click-link"]');
+    const writeMessageForm = writeSection.querySelector('#writeMessageForm');
+    const expirationInput = writeMessageForm.querySelector('#expirationInput');
+
+    let expirationOptionsLoaded = false;
 
     await loadConfig();
 
-    setupAuth(config.auth_google_client_id, ({ isLoggedIn }) => {
+    const ensureExpirationOptionsLoaded = async () => {
+        if (expirationOptionsLoaded) {
+            return;
+        }
+
+        const expirationOptions = await getExpirationOptions();
+        renderExpirationOptions(expirationInput, expirationOptions);
+        expirationOptionsLoaded = true;
+    };
+
+    setupAuth(config.auth_google_client_id, async ({ isLoggedIn }) => {
         if (!isLoggedIn) {
+            writeSection.classList.add('hidden');
+            readSection.classList.add('hidden');
+            return;
+        }
+
+        try {
+            await ensureExpirationOptionsLoaded();
+        } catch (error) {
+            console.error('Could not load expiration options:', error);
             writeSection.classList.add('hidden');
             readSection.classList.add('hidden');
             return;
@@ -55,62 +88,64 @@ const initPage = async () => {
         }
     });
 
-    const q = window.location.search.slice(1);
+    const setGlobalState = (stateClass = '', statusText = '') => {
+        const globalStatus = document.querySelector('#globalStatus');
+        const globalStatusText = document.querySelector('#globalStatusText');
+
+        globalStatus.classList.remove('is-submitting', 'is-error', 'is-success');
+        if (stateClass) {
+            globalStatus.classList.add(stateClass);
+        }
+        globalStatusText.textContent = statusText;
+    }
+
     if (q) {
         const showReadButton = document.getElementById('showReadButton');
         const readMessageOutput = document.getElementById('readMessageOutput');
 
         showReadButton.addEventListener('click', async () => {
-            readMessageOutput.style.color = 'black';
-            readMessageOutput.textContent = 'Loading...';
+            setGlobalState('is-submitting', 'Loading...');
 
             try {
                 const messageToken = JSON.parse(fromSaltedBase64(q));
-                const value = await readMessage(messageToken.ttl, messageToken.id);
-                readMessageOutput.style.color = 'green';
+                const expiration = messageToken.expiration;
+                const value = await readMessage(expiration, messageToken.id);
+
                 readMessageOutput.textContent = value;
+
+                setGlobalState('is-success');
+
             } catch (error) {
-                readMessageOutput.style.color = 'red';
-                readMessageOutput.textContent = error.message;
+                setGlobalState('is-error', error.message)
             }
         });
     }
 
     writeMessageForm.addEventListener('submit', async (event) => {
-        const setWriteMessageState = (stateClass = '', statusText = '') => {
-            writeSection.classList.remove('is-submitting', 'is-error', 'is-success');
-            if (stateClass) {
-                writeSection.classList.add(stateClass);
-            }
-            writeMessageStatus.textContent = statusText;
-        }
-
         event.preventDefault();
-        const inputTtl = document.getElementById('durationInput');
         const inputMsg = document.getElementById('messageInput');
 
-        setWriteMessageState('is-submitting', 'Submitting...');
+        setGlobalState('is-submitting', 'Submitting...');
 
         try {
-            const id = await writeMessage(inputTtl.value, inputMsg.value);
+            const id = await writeMessage(expirationInput.value, inputMsg.value);
             const key = crypto.randomUUID();
 
-            setWriteMessageState('is-success');
-
             createLink(writeMessageTwoStepLink, {
-                ttl: inputTtl.value, id
+                expiration: expirationInput.value, id
             });
 
             writeMessageKeyText.textContent = toSaltedBase64(key)
 
-            // FIXME only create with ttl = 15min => create corresponding ttl
             createLink(writeMessageOneClickLink, {
-                ttl: inputTtl.value, id, key
+                expiration: expirationInput.value, id, key
             });
 
             inputMsg.value = '';
+            setGlobalState('is-success');
+
         } catch (error) {
-            setWriteMessageState(
+            setGlobalState(
                 'is-error',
                 error.message.startsWith('Error (')
                     ? error.message

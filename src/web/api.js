@@ -1,15 +1,38 @@
 import { currentIdToken } from './auth.js';
 
-export const readMessage = async (ttl, id) => {
+const getRequestHeaders = () => {
+    return currentIdToken ? {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentIdToken}`
+    } : {};
+};
+
+export const getExpirationOptions = async () => {
+    const response = await fetch(
+        `${window.config.api_hostname}/api/getExpirationOptions`,
+        {
+            method: 'GET',
+            headers: currentIdToken ? {
+                'Authorization': `Bearer ${currentIdToken}`
+            } : {}
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error (${response.status}): ${errorText}`);
+    }
+
+    return response.json();
+};
+
+export const readMessage = async (expiration, id) => {
     const response = await fetch(
         `${window.config.api_hostname}/api/readMessage`,
         {
             method: 'POST',
-            headers: currentIdToken ? {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentIdToken}`
-            } : {},
-            body: JSON.stringify({ ttl, id })
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ expiration, id })
         }
     );
 
@@ -21,16 +44,13 @@ export const readMessage = async (ttl, id) => {
     return response.text();
 };
 
-export const writeMessage = async (ttl, value) => {
+export const writeMessage = async (expiration, value) => {
     const response = await fetch(
         `${window.config.api_hostname}/api/writeMessage`,
         {
             method: 'POST',
-            headers: currentIdToken ? {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentIdToken}`
-            } : {},
-            body: JSON.stringify({ ttl, value })
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ expiration, value })
         }
     );
 

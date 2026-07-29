@@ -16,9 +16,9 @@ app.http('writeMessage', {
 
             const body = await request.json();
 
-            const ttl = body?.ttl;
-            if (!ttl) {
-                throwHttpError(400, "Missing 'ttl' property in request payload.");
+            const expiration = body?.expiration;
+            if (!expiration) {
+                throwHttpError(400, "Missing 'expiration' property in request payload.");
             }
 
             const value = body?.value;
@@ -28,7 +28,15 @@ app.http('writeMessage', {
 
             const client = await getTableClient();
 
-            const id = await client.writeMessage(ttl, value, owner);
+            let id;
+            try {
+                id = await client.writeMessage(expiration, value);
+            } catch (error) {
+                if (error.message.includes('Unsupported expiration')) {
+                    throwHttpError(400, error.message);
+                }
+                throw error;
+            }
 
             return {
                 status: 200,

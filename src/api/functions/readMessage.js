@@ -16,9 +16,9 @@ app.http('readMessage', {
 
             const body = await request.json();
 
-            const ttl = body?.ttl;
-            if (!ttl) {
-                throwHttpError(400, "Missing 'ttl' property in request payload.");
+            const expiration = body?.expiration;
+            if (!expiration) {
+                throwHttpError(400, "Missing 'expiration' property in request payload.");
             }
 
             const id = body?.id;
@@ -29,8 +29,11 @@ app.http('readMessage', {
 
             let value;
             try {
-                value = await client.readMessage(ttl, id);
+                value = await client.readMessage(expiration, id);
             } catch (error) {
+                if (error.message.includes('Unsupported expiration')) {
+                    throwHttpError(400, error.message);
+                }
                 // FIXME explicitly check for existence in advance
                 if (error.message.includes('not found')) {
                     throwHttpError(404, `Message with id "${id}" not found.`);
@@ -38,7 +41,7 @@ app.http('readMessage', {
                 throw error;
             }
 
-            await client.tableClient.deleteEntity(ttl, id);
+            await client.tableClient.deleteEntity(String(expiration).trim(), id);
 
             return {
                 status: 200,

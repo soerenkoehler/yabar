@@ -93,11 +93,16 @@ const loadGoogleGsiScript = () => {
     });
 };
 
-export const setupAuth = (listener) => {
+export const setupAuth = (client_id, listener) => {
     const logoutButton = document.getElementById('logoutButton');
+    // FIXME check if the test is necessary in this form
     if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
         return;
     }
+
+    document
+        .getElementById('g_id_onload')
+        .setAttribute('data-client_id', `${client_id || ''}`);
 
     loadGoogleGsiScript();
 
