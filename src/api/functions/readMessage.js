@@ -7,7 +7,7 @@ app.http('readMessage', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Processing message read request for URL: "${request.url}"`);
+        context.log(`Processing message read request for URL: ${request.url}`);
 
         try {
             const roles = await authorizeRequest(request, context);
@@ -18,12 +18,12 @@ app.http('readMessage', {
 
             const expiration = body?.expiration;
             if (!expiration) {
-                throwHttpError(400, "Missing 'expiration' property in request payload.");
+                throwHttpError(400, "Missing 'expiration' property.");
             }
 
             const id = body?.id;
             if (!id) {
-                throwHttpError(400, "Missing 'id' property in request payload.");
+                throwHttpError(400, "Missing 'id' property.");
             }
 
             const client = await getTableClient();
@@ -45,7 +45,7 @@ app.http('readMessage', {
                 }
                 // FIXME explicitly check for existence in advance
                 if (error.message.includes('not found')) {
-                    throwHttpError(404, `Message with id "${id}" not found.`);
+                    throwHttpError(404, `Message with id ${id} not found.`);
                 }
                 throw error;
             }

@@ -30,7 +30,7 @@ const validateExpiration = (expiration) => {
     const normalized = String(expiration ?? '').trim();
     if (!ALLOWED_EXPIRATIONS.has(normalized)) {
         throw new Error(
-            `Unsupported expiration \"${expiration}\". Allowed values: ${[...ALLOWED_EXPIRATIONS].join(', ')}`
+            `Unsupported expiration '${expiration}'`
         );
     }
     return normalized;
@@ -77,7 +77,7 @@ export const getTableClient = async () => {
                 return entity.value ?? '';
             } catch (error) {
                 if (error?.statusCode === 404) {
-                    throw new Error(`Message with rowKey "${rowKey}" not found.`);
+                    throw new Error(`Message with rowKey ${rowKey} not found.`);
                 }
                 throw error;
             }

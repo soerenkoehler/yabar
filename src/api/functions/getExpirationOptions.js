@@ -6,7 +6,7 @@ app.http('getExpirationOptions', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Processing expiration options request for URL: "${request.url}"`);
+        context.log(`Processing expiration options request for URL: ${request.url}`);
 
         try {
             const roles = await authorizeRequest(request, context);

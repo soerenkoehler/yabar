@@ -7,7 +7,7 @@ app.http('writeMessage', {
     methods: ['POST'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Processing message write request for URL: "${request.url}"`);
+        context.log(`Processing message write request for URL: ${request.url}`);
 
         try {
             const roles = await authorizeRequest(request, context);

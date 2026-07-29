@@ -52,7 +52,7 @@ const setLoggedOut = () => {
     notifyAuthStateChanged();
 };
 
-// must be global for data-callback="handleCredentialResponse"
+// must be global for data-callback='handleCredentialResponse'
 window.handleGoogleGsiResponse = async (response) => {
     const payload = parseJwt(response.credential);
     if (!payload) {

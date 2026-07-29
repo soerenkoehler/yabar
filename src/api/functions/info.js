@@ -5,7 +5,7 @@ app.http(`info`, {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Processing request for URL: "${request.url}"`);
+        context.log(`Processing request for URL: ${request.url}`);
         return {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
