@@ -1,5 +1,5 @@
 import { setupAuth } from './auth.js';
-import { toSaltedBase64 } from './base64.js'
+import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
 import { readMessage, writeMessage } from './api.js';
 
 let config = {};
@@ -29,14 +29,6 @@ const loadConfig = async () => {
 };
 
 const initPage = async () => {
-    await loadConfig();
-
-    document
-        .getElementById('g_id_onload')
-        .setAttribute('data-client_id', `${config.auth_google_client_id || ''}`);
-
-    await loadGoogleGsiScript();
-
     const readSection = document.getElementById('readMessageSection');
     const writeSection = document.getElementById('writeMessageSection');
     const writeMessageForm = document.getElementById('writeMessageForm');
@@ -44,9 +36,27 @@ const initPage = async () => {
     const writeMessageTwoStepLink = writeSection.querySelector('[data-role="two-step-link"]');
     const writeMessageKeyText = writeSection.querySelector('[data-role="key-text"]');
     const writeMessageOneClickLink = writeSection.querySelector('[data-role="one-click-link"]');
-    const m = window.location.search.slice(1);
 
-    if (m) {
+    await loadConfig();
+
+    setupAuth(config.auth_google_client_id, ({ isLoggedIn }) => {
+        if (!isLoggedIn) {
+            writeSection.classList.add('hidden');
+            readSection.classList.add('hidden');
+            return;
+        }
+
+        if (q) {
+            writeSection.classList.add('hidden');
+            readSection.classList.remove('hidden');
+        } else {
+            writeSection.classList.remove('hidden');
+            readSection.classList.add('hidden');
+        }
+    });
+
+    const q = window.location.search.slice(1);
+    if (q) {
         const showReadButton = document.getElementById('showReadButton');
         const readMessageOutput = document.getElementById('readMessageOutput');
 
@@ -55,7 +65,8 @@ const initPage = async () => {
             readMessageOutput.textContent = 'Loading...';
 
             try {
-                const value = await readMessage(m);
+                const messageToken = JSON.parse(fromSaltedBase64(q));
+                const value = await readMessage(messageToken.ttl, messageToken.id);
                 readMessageOutput.style.color = 'green';
                 readMessageOutput.textContent = value;
             } catch (error) {
@@ -64,22 +75,6 @@ const initPage = async () => {
             }
         });
     }
-
-    setupAuth(({ isLoggedIn }) => {
-        if (!isLoggedIn) {
-            writeSection.classList.add('hidden');
-            readSection.classList.add('hidden');
-            return;
-        }
-
-        if (m) {
-            writeSection.classList.add('hidden');
-            readSection.classList.remove('hidden');
-        } else {
-            writeSection.classList.remove('hidden');
-            readSection.classList.add('hidden');
-        }
-    });
 
     writeMessageForm.addEventListener('submit', async (event) => {
         const setWriteMessageState = (stateClass = '', statusText = '') => {
@@ -108,6 +103,7 @@ const initPage = async () => {
 
             writeMessageKeyText.textContent = toSaltedBase64(key)
 
+            // FIXME only create with ttl = 15min => create corresponding ttl
             createLink(writeMessageOneClickLink, {
                 ttl: inputTtl.value, id, key
             });

@@ -27,7 +27,8 @@ app.http('writeMessage', {
             }
 
             const client = await getTableClient();
-            const id = await client.writeMessage(ttl, value);
+
+            const id = await client.writeMessage(ttl, value, owner);
 
             return {
                 status: 200,

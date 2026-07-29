@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Sharepass Backend API",
   "main": "functions/*.js",
+  "type": "module",
   "scripts": {
     "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",
     "build": "npm install"

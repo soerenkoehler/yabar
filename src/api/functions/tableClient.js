@@ -29,7 +29,6 @@ export const getTableClient = async () => {
     }
 
     const tableName = 'messages';
-
     const tableClient = TableClient.fromConnectionString(connectionString, tableName);
     await tableClient.createTable();
 
@@ -39,7 +38,7 @@ export const getTableClient = async () => {
 
         writeMessage: async (pk, message) => {
             const rowKey = generateRowKey();
-            await this.tableClient.createEntity({
+            await tableClient.createEntity({
                 partitionKey: pk,
                 rowKey,
                 value: String(message),
@@ -50,7 +49,7 @@ export const getTableClient = async () => {
 
         readMessage: async (pk, rowKey) => {
             try {
-                const entity = await this.tableClient.getEntity(pk, rowKey);
+                const entity = await tableClient.getEntity(pk, rowKey);
                 return entity.value ?? '';
             } catch (error) {
                 if (error?.statusCode === 404) {

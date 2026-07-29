@@ -16,16 +16,15 @@ app.http('readMessage', {
 
             const body = await request.json();
 
-            const ttl = data?.ttl;
+            const ttl = body?.ttl;
             if (!ttl) {
                 throwHttpError(400, "Missing 'ttl' property in request payload.");
             }
 
-            const id = data?.id;
+            const id = body?.id;
             if (!id) {
                 throwHttpError(400, "Missing 'id' property in request payload.");
             }
-
             const client = await getTableClient();
 
             let value;
