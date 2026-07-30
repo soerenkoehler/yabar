@@ -1,6 +1,6 @@
-import { setupAuth } from './auth.js';
+import { authClient } from './auth.js';
+import { apiClient } from './api.js';
 import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
-import { getApiClient } from './api.js';
 
 let config = {};
 
@@ -133,7 +133,7 @@ const initPage = async () => {
             return;
         }
 
-        const client = await getApiClient(config.api_hostname);
+        const client = await apiClient(config.api_hostname);
         const backendConfig = await client.getConfig();
         config = { ...config, ...backendConfig };
         renderExpirationOptions(writeMessageInputExpiration, config.expiration_options ?? []);
@@ -149,7 +149,7 @@ const initPage = async () => {
         return;
     }
 
-    setupAuth(config.auth_google_client_id, async ({ isLoggedIn }) => {
+    authClient(config.auth_google_client_id, async ({ isLoggedIn }) => {
         setGlobalState('state-idle');
         setAuthenticated(isLoggedIn);
         if (isLoggedIn) {
@@ -203,7 +203,7 @@ const initPage = async () => {
         setGlobalState('state-submitting', 'Loading...');
 
         try {
-            const client = await getApiClient(config.api_hostname);
+            const client = await apiClient(config.api_hostname);
             const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
             const value = await client.readMessage(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = value;
@@ -219,7 +219,7 @@ const initPage = async () => {
         setGlobalState('state-submitting', 'Submitting...');
 
         try {
-            const client = await getApiClient(config.api_hostname);
+            const client = await apiClient(config.api_hostname);
             const id = await client.writeMessage(writeMessageInputExpiration.value, writeMessageInputText.value);
             const key = crypto.randomUUID();
 

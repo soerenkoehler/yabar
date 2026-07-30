@@ -11,7 +11,7 @@ resource "azurerm_static_web_app" "swa" {
   sku_size = "Free"
 
   app_settings = {
-    "api_hostname": "https://${var.project_global_prefix}"
+    "api_hostname": "https://${var.project_global_prefix}.azurewebsites.net"
   }
 }
 

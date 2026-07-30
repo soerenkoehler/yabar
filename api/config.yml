@@ -6,7 +6,6 @@ info:
 http:
   method: GET
   url: "{{functionapp_host}}/api/config"
-  auth: inherit
 
 settings:
   encodeUrl: true

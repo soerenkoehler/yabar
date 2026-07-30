@@ -84,7 +84,7 @@ const loadGoogleGsiScript = () => {
     });
 };
 
-export const setupAuth = (client_id, listener) => {
+export const authClient = (client_id, listener) => {
     // FIXME check if the test is necessary in this form
     if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
         return;

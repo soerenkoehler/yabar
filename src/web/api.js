@@ -9,20 +9,17 @@ const getRequestHeaders = () => {
     } : {};
 };
 
-export const getApiClient = async (api_hostname) => {
+export const apiClient = async (api_hostname) => {
     if (cached) {
         return cached;
     }
 
     const client = {
-        getConfig: async () => {
+        config: async () => {
             const response = await fetch(
                 `${api_hostname}/api/config`,
                 {
-                    method: 'GET',
-                    headers: currentIdToken ? {
-                        'Authorization': `Bearer ${currentIdToken}`
-                    } : {}
+                    method: 'GET'
                 }
             );
 
@@ -34,9 +31,9 @@ export const getApiClient = async (api_hostname) => {
             return response.json();
         },
 
-        readMessage: async (expiration, id) => {
+        read: async (expiration, id) => {
             const response = await fetch(
-                `${api_hostname}/api/readMessage`,
+                `${api_hostname}/api/read`,
                 {
                     method: 'POST',
                     headers: getRequestHeaders(),
@@ -52,9 +49,9 @@ export const getApiClient = async (api_hostname) => {
             return response.text();
         },
 
-        writeMessage: async (expiration, value) => {
+        write: async (expiration, value) => {
             const response = await fetch(
-                `${api_hostname}/api/writeMessage`,
+                `${api_hostname}/api/write`,
                 {
                     method: 'POST',
                     headers: getRequestHeaders(),

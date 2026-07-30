@@ -37,7 +37,7 @@ const validateExpiration = (expiration) => {
     return normalized;
 };
 
-export const getTableClient = async () => {
+export const tableClient = async () => {
     if (cached) {
         return cached;
     }
