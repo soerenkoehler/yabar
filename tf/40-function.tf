@@ -65,7 +65,14 @@ resource "azurerm_function_app_flex_consumption" "api" {
   app_settings = {
     "AzureWebJobsStorage"              = ""
     "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
+    "TableConnectionString"            = azurerm_storage_account.sharepass.primary_table_endpoint
     "AUTH_GOOGLE_CLIENT_ID"            = var.auth_google_client_id
+  }
+
+  lifecycle {
+    ignore_changes = [
+      app_settings["AzureWebJobsStorage"]
+    ]
   }
 }
 
