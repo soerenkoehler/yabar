@@ -1,24 +1,22 @@
 import { app } from '@azure/functions';
-import { authorizeRequest } from './auth.js';
 import { getTableClient } from './tableClient.js';
 
-app.http('getExpirationOptions', {
+app.http('config', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
-        context.log(`Processing expiration options request for URL: ${request.url}`);
+        context.log(`Processing config request for URL: ${request.url}`);
 
         try {
-            const roles = await authorizeRequest(request, context);
-            context.log('Authorized roles:', roles);
-            // FIXME evaluate roles
-
             const client = await getTableClient();
-            const options = client.getExpirationOptions();
+            const expirationOptions = client.getExpirationOptions();
 
             return {
                 status: 200,
-                jsonBody: options
+                jsonBody: {
+                    auth_google_client_id: process.env.AUTH_GOOGLE_CLIENT_ID,
+                    expiration_options: expirationOptions
+                }
             };
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);

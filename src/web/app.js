@@ -64,7 +64,7 @@ const initPage = async () => {
         }
     };
 
-    let expirationOptionsLoaded = false;
+    let backendConfigLoaded = false;
     let isAuthenticated = false;
 
     const setAuthenticated = (authenticated) => {
@@ -128,30 +128,37 @@ const initPage = async () => {
     topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
     topMenuModeRead.addEventListener('click', () => void switchMode('mode-reading'));
 
-    const ensureExpirationOptionsLoaded = async () => {
-        if (expirationOptionsLoaded) {
+    const ensureBackendConfigLoaded = async () => {
+        if (backendConfigLoaded) {
             return;
         }
 
         const client = await getApiClient(config.api_hostname);
-        const expirationOptions = await client.getExpirationOptions();
-        renderExpirationOptions(writeMessageInputExpiration, expirationOptions);
-        expirationOptionsLoaded = true;
+        const backendConfig = await client.getConfig();
+        config = { ...config, ...backendConfig };
+        renderExpirationOptions(writeMessageInputExpiration, config.expiration_options ?? []);
+        backendConfigLoaded = true;
     };
 
     await loadConfig();
+
+    try {
+        await ensureBackendConfigLoaded();
+    } catch (error) {
+        setGlobalState('state-error', `Could not load config: ${error}`);
+        return;
+    }
 
     setupAuth(config.auth_google_client_id, async ({ isLoggedIn }) => {
         setGlobalState('state-idle');
         setAuthenticated(isLoggedIn);
         if (isLoggedIn) {
             try {
-                await ensureExpirationOptionsLoaded();
                 setInitialMode();
                 setGlobalState('state-input');
                 updateSubmitButtons();
             } catch (error) {
-                setGlobalState('state-error', `Could not load expiration options: ${error}`);
+                setGlobalState('state-error', `Could not initialize page: ${error}`);
             }
         }
     });

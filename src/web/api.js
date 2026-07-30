@@ -15,9 +15,9 @@ export const getApiClient = async (api_hostname) => {
     }
 
     const client = {
-        getExpirationOptions: async () => {
+        getConfig: async () => {
             const response = await fetch(
-                `${api_hostname}/api/getExpirationOptions`,
+                `${api_hostname}/api/config`,
                 {
                     method: 'GET',
                     headers: currentIdToken ? {

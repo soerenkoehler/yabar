@@ -1,4 +1,5 @@
 import { TableClient } from '@azure/data-tables';
+import { DefaultAzureCredential } from "@azure/identity";
 import { randomUUID } from 'node:crypto';
 
 let cached = null;
@@ -47,7 +48,9 @@ export const getTableClient = async () => {
     }
 
     const tableName = 'messages';
-    const tableClient = TableClient.fromConnectionString(connectionString, tableName);
+    const tableClient = connectionString.startsWith('http')
+        ? new TableClient(connectionString, tableName, new DefaultAzureCredential())
+        : TableClient.fromConnectionString(connectionString, tableName);
     await tableClient.createTable();
 
     const client = {
