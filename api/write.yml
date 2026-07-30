@@ -1,11 +1,11 @@
 info:
-  name: writeMessage
+  name: write
   type: http
   seq: 2
 
 http:
   method: POST
-  url: "{{functionapp_host}}/api/writeMessage"
+  url: "{{functionapp_host}}/api/write"
   body:
     type: json
     data: |-

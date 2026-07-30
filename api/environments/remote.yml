@@ -3,7 +3,10 @@ color: "#C77A0F"
 variables:
   - secret: true
     name: functionapp_host
+    description: ""
   - secret: true
     name: google_client_id
+    description: ""
   - secret: true
     name: google_client_secret
+    description: ""
