@@ -57,17 +57,11 @@ const initPage = async () => {
     const writeMessageOutputTwoStepKey = document.getElementById('writeMessageOutputKeyTwoStep');
     const writeMessageOutputUrlOneClick = document.getElementById('writeMessageOutputUrlOneClick');
 
-    const writeMessageSubmit = document.getElementById('writeMessageSubmit');
-    const readMessageSubmit = document.getElementById('readMessageSubmit');
-
-    const updateWriteSubmitState = () => {
-        const inputs = writeMessageInputForm.querySelectorAll('input[type="text"], input[type="password"]');
-        writeMessageSubmit.disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
-    };
-
-    const updateReadSubmitState = () => {
-        const inputs = readMessageInputForm.querySelectorAll('input[type="text"], input[type="password"]');
-        readMessageSubmit.disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
+    const updateSubmitButtons = () => {
+        for (const form of [readMessageInputForm, writeMessageInputForm]) {
+            const inputs = form.querySelectorAll('input[type="text"], input[type="password"]');
+            form.querySelector('button[type="submit"]').disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
+        }
     };
 
     let expirationOptionsLoaded = false;
@@ -128,8 +122,7 @@ const initPage = async () => {
 
         setGlobalMode(modeClass);
         setGlobalState('state-input');
-        updateReadSubmitState();
-        updateWriteSubmitState();
+        updateSubmitButtons();
     };
 
     topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
@@ -156,8 +149,7 @@ const initPage = async () => {
                 await ensureExpirationOptionsLoaded();
                 setInitialMode();
                 setGlobalState('state-input');
-                updateReadSubmitState();
-                updateWriteSubmitState();
+                updateSubmitButtons();
             } catch (error) {
                 setGlobalState('state-error', `Could not load expiration options: ${error}`);
             }
@@ -182,7 +174,7 @@ const initPage = async () => {
                 readMessageInputKey.value = '';
                 readMessageInputKey.disabled = true;
                 readMessageInputKey.placeholder = 'one click token';
-                updateReadSubmitState();
+                updateSubmitButtons();
                 return;
             }
         }
@@ -192,11 +184,11 @@ const initPage = async () => {
 
         readMessageInputKey.disabled = false;
         readMessageInputKey.placeholder = 'Enter base64 key...';
-        updateReadSubmitState();
+        updateSubmitButtons();
     });
 
-    readMessageInputKey.addEventListener('input', updateReadSubmitState);
-    writeMessageInputText.addEventListener('input', updateWriteSubmitState);
+    readMessageInputKey.addEventListener('input', updateSubmitButtons);
+    writeMessageInputText.addEventListener('input', updateSubmitButtons);
 
     readMessageInputForm.addEventListener('submit', async (event) => {
         event.preventDefault();

@@ -84,6 +84,10 @@
             padding: 0.5rem 1rem;
             cursor: pointer;
         }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
     </style>
     <script type="module" src="./app.js"></script>
 </head>
@@ -120,7 +124,7 @@
                         <input id="messageInput" type="text" required placeholder="Enter text here..." />
                     </label>
                 </div>
-                <button id="writeMessageSubmit" type="submit" disabled>Send</button>
+                <button type="submit" disabled>Send</button>
             </form>
 
             <div id="writeMessageOutput">
@@ -156,7 +160,7 @@
                         <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
                     </label>
                 </div>
-                <button id="readMessageSubmit" type="submit" disabled>Show</button>
+                <button type="submit" disabled>Show</button>
             </form>
 
             <div id="readMessageOutput"></div>
