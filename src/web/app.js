@@ -3,7 +3,6 @@ import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
 import { getApiClient } from './api.js';
 
 let config = {};
-let urlQueryToken = {};
 
 const createLink = (element, data) => {
     const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
@@ -58,6 +57,19 @@ const initPage = async () => {
     const writeMessageOutputTwoStepKey = document.getElementById('writeMessageOutputKeyTwoStep');
     const writeMessageOutputUrlOneClick = document.getElementById('writeMessageOutputUrlOneClick');
 
+    const writeMessageSubmit = document.getElementById('writeMessageSubmit');
+    const readMessageSubmit = document.getElementById('readMessageSubmit');
+
+    const updateWriteSubmitState = () => {
+        const inputs = writeMessageInputForm.querySelectorAll('input[type="text"], input[type="password"]');
+        writeMessageSubmit.disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
+    };
+
+    const updateReadSubmitState = () => {
+        const inputs = readMessageInputForm.querySelectorAll('input[type="text"], input[type="password"]');
+        readMessageSubmit.disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
+    };
+
     let expirationOptionsLoaded = false;
     let isAuthenticated = false;
 
@@ -92,6 +104,7 @@ const initPage = async () => {
         if (modeClass) {
             mainPage.classList.add(modeClass);
         }
+        readMessageInputMessageId.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
     const setInitialMode = () => {
@@ -99,14 +112,6 @@ const initPage = async () => {
 
         if (urlQuery) {
             readMessageInputMessageId.value = urlQuery;
-
-            const urlQueryToken = JSON.parse(fromSaltedBase64(urlQuery));
-            if (urlQueryToken?.key) {
-                readMessageInputKey.value = '';
-                readMessageInputKey.disabled = true;
-                readMessageInputKey.placeholder = 'one click token';
-            }
-
             setGlobalMode('mode-reading');
         } else {
             setGlobalMode('mode-writing');
@@ -119,14 +124,12 @@ const initPage = async () => {
         }
 
         readMessageInputForm.reset();
-        readMessageInputKey.value = '';
-        readMessageInputKey.disabled = false;
-        readMessageInputKey.placeholder = 'Enter base64 key...';
-
         writeMessageInputForm.reset();
 
         setGlobalMode(modeClass);
         setGlobalState('state-input');
+        updateReadSubmitState();
+        updateWriteSubmitState();
     };
 
     topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
@@ -153,11 +156,47 @@ const initPage = async () => {
                 await ensureExpirationOptionsLoaded();
                 setInitialMode();
                 setGlobalState('state-input');
+                updateReadSubmitState();
+                updateWriteSubmitState();
             } catch (error) {
                 setGlobalState('state-error', `Could not load expiration options: ${error}`);
             }
         }
     });
+
+    readMessageInputMessageId.addEventListener('input', async () => {
+        const inputValue = readMessageInputMessageId.value.trim();
+
+        try {
+            const inputUrl = new URL(inputValue);
+            if (inputUrl.search.length > 1) {
+                readMessageInputMessageId.value = inputUrl.search.slice(1);
+            }
+        } catch {
+            // Not a URL, keep the user-provided token as-is.
+        }
+
+        try {
+            const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
+            if (urlQueryToken?.key) {
+                readMessageInputKey.value = '';
+                readMessageInputKey.disabled = true;
+                readMessageInputKey.placeholder = 'one click token';
+                updateReadSubmitState();
+                return;
+            }
+        }
+        catch {
+            // Not yet valid JSON, keep the user-provided token as-is.
+        }
+
+        readMessageInputKey.disabled = false;
+        readMessageInputKey.placeholder = 'Enter base64 key...';
+        updateReadSubmitState();
+    });
+
+    readMessageInputKey.addEventListener('input', updateReadSubmitState);
+    writeMessageInputText.addEventListener('input', updateWriteSubmitState);
 
     readMessageInputForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -166,7 +205,8 @@ const initPage = async () => {
 
         try {
             const client = await getApiClient(config.api_hostname);
-            const value = await client.readMessage(expiration, readMessageInputMessageId.value);
+            const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
+            const value = await client.readMessage(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = value;
             setGlobalState('state-success');
         } catch (error) {

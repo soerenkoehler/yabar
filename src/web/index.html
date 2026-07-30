@@ -66,6 +66,12 @@
             font-weight: bold;
         }
 
+        label:has(input:disabled) {
+            color: #a0aec0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         input[type="text"],
         input[type="password"],
         select {
@@ -103,16 +109,18 @@
 
             <form id="writeMessageInputForm">
                 <div class="form-group">
-                    <label for="writeMessageInputExpiration">Expires In:</label>
-                    <select id="writeMessageInputExpiration" required>
-                        <option value="" disabled selected>Loading options...</option>
-                    </select>
+                    <label>Expires In:
+                        <select id="writeMessageInputExpiration" required>
+                            <option value="" disabled selected>Loading options...</option>
+                        </select>
+                    </label>
                 </div>
                 <div class="form-group">
-                    <label for="messageInput">Message Payload:</label>
-                    <input type="text" id="messageInput" required placeholder="Enter text here...">
+                    <label>Message Payload:
+                        <input id="messageInput" type="text" required placeholder="Enter text here..." />
+                    </label>
                 </div>
-                <button type="submit">Send</button>
+                <button id="writeMessageSubmit" type="submit" disabled>Send</button>
             </form>
 
             <div id="writeMessageOutput">
@@ -136,14 +144,19 @@
 
             <form id="readMessageInputForm">
                 <div class="form-group">
-                    <label for="readMessageInputMessageId">Message ID (base64):</label>
-                    <input type="text" id="readMessageInputMessageId" required placeholder="Enter base64 messageId...">
+                    <label>
+                        Message ID:
+                        <input id="readMessageInputMessageId" type="text" required
+                            placeholder="Enter messageId..." />
+                    </label>
                 </div>
                 <div class="form-group">
-                    <label for="readMessageInputKey">Key (base64):</label>
-                    <input type="password" id="readMessageInputKey" placeholder="Enter base64 key...">
+                    <label>
+                        Key:
+                        <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
+                    </label>
                 </div>
-                <button type="submit">Show</button>
+                <button id="readMessageSubmit" type="submit" disabled>Show</button>
             </form>
 
             <div id="readMessageOutput"></div>
