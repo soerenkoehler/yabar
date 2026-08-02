@@ -9,7 +9,6 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BlobServiceClient } from '@azure/storage-blob';
@@ -18,6 +17,7 @@ import { TableClient } from '@azure/data-tables';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SETTINGS_PATH = join(__dirname, '..', 'local.settings.json');
 const USERS_PATH = join(__dirname, 'users.json');
+const CONFIG_PATH = join(__dirname, 'config.json');
 
 // --------------------------------------------------------------------------
 // Config
@@ -26,22 +26,33 @@ const USERS_PATH = join(__dirname, 'users.json');
 const APP_DATA_CONTAINER = 'appdata';
 const TABLE_NAME = 'messages';
 
-const CONFIG_BLOB = {
-    name: 'config',
-    contentType: 'application/json',
-    content: JSON.stringify({
-        auth_google_client_id: '',
-        expiration_options: [
-            { value: '1',   label: '1 Hour' },
-            { value: '24',  label: '1 Day' },
-            { value: '168', label: '1 Week' },
-        ],
-    }),
+const CONFIG_BLOB_DEFAULTS = {
+    auth_google_client_id: '',
+    expiration_options: [
+        { value: '1',   label: '1 Hour' },
+        { value: '24',  label: '1 Day' },
+        { value: '168', label: '1 Week' },
+    ],
 };
 
 // --------------------------------------------------------------------------
 // Helpers
 // --------------------------------------------------------------------------
+
+const loadConfig = async () => {
+    try {
+        const raw = await readFile(CONFIG_PATH, 'utf8');
+        const overrides = JSON.parse(raw);
+        const merged = { ...CONFIG_BLOB_DEFAULTS, ...overrides };
+        console.log('  Loaded config overrides from config.json');
+        return merged;
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            throw new Error(`Failed to parse config.json: ${err.message}`);
+        }
+        return CONFIG_BLOB_DEFAULTS;
+    }
+}
 
 const loadConnectionStrings = async () => {
     try {
@@ -113,14 +124,14 @@ const main = async () => {
     console.log('Seeding Azurite storage...\n');
 
     const { blob: blobConnStr, table: tableConnStr } = await loadConnectionStrings();
-    const users = await loadUsers();
+    const [users, config] = await Promise.all([loadUsers(), loadConfig()]);
 
     const blobServiceClient = BlobServiceClient.fromConnectionString(blobConnStr);
 
     // --- appdata container + blobs ---
     console.log('Storage container: appdata');
     const appData = await ensureContainer(blobServiceClient, APP_DATA_CONTAINER);
-    await uploadBlob(appData, CONFIG_BLOB.name, CONFIG_BLOB.content, CONFIG_BLOB.contentType);
+    await uploadBlob(appData, 'config', JSON.stringify(config), 'application/json');
     await uploadBlob(appData, 'users', JSON.stringify(users), 'application/json');
 
     // --- messages table ---

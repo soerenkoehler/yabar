@@ -5,10 +5,11 @@
   "main": "functions/*.js",
   "type": "module",
   "scripts": {
-    "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",
-    "build": "npm install",
+    "seed:azurite": "node scripts/seed-azurite.js",
     "predev": "npm install && npm run seed:azurite",
-    "dev": "func start --javascript"
+    "dev": "func start --javascript",
+    "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",
+    "build": "npm install"
   },
   "dependencies": {
     "@azure/data-tables": "^13.0.0",
