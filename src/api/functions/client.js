@@ -54,9 +54,6 @@ export const tableClient = async () => {
     await tableClient.createTable();
 
     const client = {
-        tableClient,
-        tableName,
-
         getExpirationOptions: () => {
             return EXPIRATION_OPTIONS.map((option) => ({ ...option }));
         },
@@ -84,6 +81,11 @@ export const tableClient = async () => {
                 }
                 throw error;
             }
+        },
+
+        deleteMessage: async (expiration, rowKey) => {
+            const partitionKey = validateExpiration(expiration);
+            await tableClient.deleteEntity(partitionKey, rowKey);
         }
     };
 

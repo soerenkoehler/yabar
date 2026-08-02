@@ -31,8 +31,7 @@ app.http('read', {
             try {
                 const value = await client.readMessage(expiration, id);
 
-                // FIXME create deleteEntity-route or include in readMessage() backend
-                await client.tableClient.deleteEntity(String(expiration).trim(), id);
+                await client.deleteMessage(expiration, id);
 
                 return {
                     status: 200,
