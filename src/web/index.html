@@ -11,13 +11,13 @@
             margin: 2rem;
         }
 
-        .auth-logged-in #topMenuLogin,
+        .auth-logged-out #logoutButton,
         .auth-logged-out #topMenuMain {
             display: none
         }
 
-        .auth-logged-in #topMenuMain,
-        .auth-logged-out #topMenuLogin {
+        .auth-logged-in #logoutButton,
+        .auth-logged-in #topMenuMain {
             display: block
         }
 
@@ -89,6 +89,55 @@
             cursor: not-allowed;
         }
     </style>
+    <style>
+        /* ----- Logout Button ----- */
+        /* Container matching Google Standard Button geometry and typography */
+        .g_id_signout_custom {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 12px;
+            background-color: #ffffff;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.25px;
+            cursor: pointer;
+            box-shadow: none;
+            transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+            user-select: none;
+        }
+
+        /* Hover state matching Google's subtle fill */
+        .g_id_signout_custom:hover {
+            background-color: #f7f8f8;
+            border-color: #d2e3fc;
+        }
+
+        /* Focus & Active states */
+        .g_id_signout_custom:focus {
+            outline: none;
+            border-color: #1a73e8;
+            background-color: #f8faff;
+        }
+
+        .g_id_signout_custom:active {
+            background-color: #f1f3f4;
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        }
+
+        /* Icon sizing & spacing */
+        .g_id_signout_custom .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+    </style>
     <script type="module" src="./app.js"></script>
 </head>
 
@@ -97,13 +146,20 @@
         <div id="topMenuLogin">
             <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
             <div id="loginButton" class="g_id_signin" data-type="standard"></div>
+            <button id="logoutButton" class="g_id_signout_custom" type="button">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+                            viewBox="0 0 48 48" />
+                    </svg>
+                <span>Sign out</span>
+            </button>
+            <div id="authStatus">Not logged in</div>
         </div>
 
         <div id="topMenuMain">
             <button id="topMenuModeWrite" type="button">New Message</button>
             <button id="topMenuModeRead" type="button">Read Message</button>
-            <div id="authStatus">Not logged in</div>
-            <button id="logoutButton" type="button">Logout</button>
         </div>
     </div>
 
@@ -150,8 +206,7 @@
                 <div class="form-group">
                     <label>
                         Message ID:
-                        <input id="readMessageInputMessageId" type="text" required
-                            placeholder="Enter messageId..." />
+                        <input id="readMessageInputMessageId" type="text" required placeholder="Enter messageId..." />
                     </label>
                 </div>
                 <div class="form-group">
