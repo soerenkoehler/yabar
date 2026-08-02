@@ -71,7 +71,8 @@ resource "azurerm_function_app_flex_consumption" "api" {
 
   lifecycle {
     ignore_changes = [
-      app_settings["AzureWebJobsStorage"]
+      app_settings["AzureWebJobsStorage"],
+      tags["hidden-link: /app-insights-resource-id"],
     ]
   }
 }
