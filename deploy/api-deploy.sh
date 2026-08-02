@@ -8,7 +8,7 @@ source "./deploy/@get-output.sh"
 FUNCTION_NAME=$(
     jq -r '.api_function_name.value // ""' <<<"$OUTPUT"
 )
-az functionapp config appsettings delete \
+az functionapp config appsettings set \
     --name "$FUNCTION_NAME" \
     --resource-group "$PROJECT_RESOURCE_GROUP" \
     --settings AzureWebJobsStorage=""
