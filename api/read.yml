@@ -1,0 +1,22 @@
+info:
+  name: read
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{functionapp_host}}/api/read"
+  body:
+    type: json
+    data: |-
+      {
+        "expiration": "1",
+        "id": "{{messageId}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

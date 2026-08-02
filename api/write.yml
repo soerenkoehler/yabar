@@ -1,7 +1,7 @@
 info:
   name: write
   type: http
-  seq: 2
+  seq: 3
 
 http:
   method: POST
@@ -10,9 +10,21 @@ http:
     type: json
     data: |-
       {
+        "expiration": "1",
         "value": "test"
       }
   auth: inherit
+
+runtime:
+  actions:
+    - type: set-variable
+      phase: after-response
+      selector:
+        expression: res.body
+        method: jsonq
+      variable:
+        name: messageId
+        scope: runtime
 
 settings:
   encodeUrl: true
