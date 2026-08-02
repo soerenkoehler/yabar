@@ -1,5 +1,5 @@
 import { app } from '@azure/functions';
-import { tableClient } from './client.js';
+import { getClient } from './client.js';
 
 app.http('config', {
     methods: ['GET'],
@@ -8,7 +8,7 @@ app.http('config', {
         context.log(`Processing config request for URL: ${request.url}`);
 
         try {
-            const client = await tableClient();
+            const client = await getClient();
             const config = await client.config();
 
             return {

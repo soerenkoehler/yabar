@@ -6,13 +6,15 @@
   "type": "module",
   "scripts": {
     "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",
-    "build": "npm install"
+    "build": "npm install",
+    "predev": "npm install && npm run seed:azurite",
+    "dev": "func start --javascript"
   },
   "dependencies": {
     "@azure/data-tables": "^13.0.0",
     "@azure/functions": "^4.0.0",
     "@azure/identity": "^4.0.0",
-    "@azure/storage-blob": "^12.0.0",
+    "@azure/storage-blob": "~12.29.0",
     "google-auth-library": "^10.0.0"
   }
 }

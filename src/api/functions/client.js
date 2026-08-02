@@ -32,9 +32,9 @@ const streamToString = async (readableStream) => {
     return Buffer.concat(chunks).toString('utf8');
 };
 
-const connect(connectionString, fromEndpoint, fromConnectionString) => {
+const connect = (connectionString, fromEndpoint, fromConnectionString) => {
     if (!connectionString) {
-        throw new Error('TableConnectionString environment variable is not defined.');
+        throw new Error('ConnectionString environment variable is not defined.');
     }
 
     const serviceClient = connectionString.startsWith('http')
@@ -44,7 +44,7 @@ const connect(connectionString, fromEndpoint, fromConnectionString) => {
     return serviceClient;
 }
 
-export const client = async () => {
+export const getClient = async () => {
     if (cached) {
         return cached;
     }
@@ -81,7 +81,7 @@ export const client = async () => {
         }
     };
 
-    const validateExpiration = (expiration) => {
+    const validateExpiration = async (expiration) => {
         const normalized = String(expiration ?? '').trim();
         const config = await readJsonBlob(CONFIG_BLOB_NAME);
         const options = Array.isArray(config?.expiration_options) ? config.expiration_options : [];

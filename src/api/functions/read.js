@@ -1,7 +1,7 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
 import { throwHttpError } from './http.js';
-import { tableClient } from './client.js';
+import { getClient } from './client.js';
 
 app.http('read', {
     methods: ['POST'],
@@ -26,7 +26,7 @@ app.http('read', {
                 throwHttpError(400, "Missing 'id' property.");
             }
 
-            const client = await tableClient();
+            const client = await getClient();
 
             try {
                 const value = await client.readMessage(expiration, id);

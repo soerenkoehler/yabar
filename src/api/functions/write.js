@@ -1,7 +1,7 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
 import { throwHttpError } from './http.js';
-import { tableClient } from './client.js';
+import { getClient } from './client.js';
 
 app.http('write', {
     methods: ['POST'],
@@ -29,7 +29,7 @@ app.http('write', {
 
             let id;
             try {
-                const client = await tableClient();
+                const client = await getClient();
                 id = await client.writeMessage(expiration, value);
             } catch (error) {
                 if (error.message.includes('Unsupported expiration')) {

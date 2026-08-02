@@ -1,9 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 import { throwHttpError } from './http.js';
-import { client } from './client.js';
-
-let authClient = null;
-let authClientId = null;
+import { getClient } from './client.js';
 
 export const authorizeRequest = async (request, context) => {
     const authHeader = request.headers.get('authorization');
@@ -15,7 +12,7 @@ export const authorizeRequest = async (request, context) => {
     const token = authHeader.split(' ')[1];
 
     try {
-        const client = await client();
+        const client = await getClient();
 
         const config = await client.getConfig();
         const authGoogleClientId = String(config?.auth_google_client_id ?? '').trim();
@@ -23,7 +20,7 @@ export const authorizeRequest = async (request, context) => {
             throw new Error("Missing 'auth_google_client_id' in config blob.");
         }
 
-        authClient = new OAuth2Client(authGoogleClientId);
+        const authClient = new OAuth2Client(authGoogleClientId);
         const ticket = await authClient.verifyIdToken({
             idToken: token,
             audience: authGoogleClientId,
