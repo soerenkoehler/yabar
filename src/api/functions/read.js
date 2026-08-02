@@ -1,7 +1,7 @@
 import { app } from '@azure/functions';
 import { authorizeRequest } from './auth.js';
 import { throwHttpError } from './http.js';
-import { tableClient } from './tableClient.js';
+import { tableClient } from './client.js';
 
 app.http('read', {
     methods: ['POST'],

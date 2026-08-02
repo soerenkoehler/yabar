@@ -1,13 +1,11 @@
 import { OAuth2Client } from 'google-auth-library';
 import { throwHttpError } from './http.js';
+import { client } from './client.js';
 
-const authGoogleClientId = process.env.AUTH_GOOGLE_CLIENT_ID;
-const client = new OAuth2Client(authGoogleClientId);
-const roleAssignments = {
-    'soerenkoehler@gmail.com': ['admin', 'write'],
-};
+let authClient = null;
+let authClientId = null;
 
-const authorizeRequest = async (request, context) => {
+export const authorizeRequest = async (request, context) => {
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,7 +15,16 @@ const authorizeRequest = async (request, context) => {
     const token = authHeader.split(' ')[1];
 
     try {
-        const ticket = await client.verifyIdToken({
+        const client = await client();
+
+        const config = await client.getConfig();
+        const authGoogleClientId = String(config?.auth_google_client_id ?? '').trim();
+        if (!authGoogleClientId) {
+            throw new Error("Missing 'auth_google_client_id' in config blob.");
+        }
+
+        authClient = new OAuth2Client(authGoogleClientId);
+        const ticket = await authClient.verifyIdToken({
             idToken: token,
             audience: authGoogleClientId,
         });
@@ -31,7 +38,8 @@ const authorizeRequest = async (request, context) => {
             throwHttpError(401, 'Unauthorized: Email is not verified.');
         }
 
-        return roleAssignments[userEmail] ?? [];
+        const users = await client.getUsers();
+        return user?.[userEmail] ?? [];
     } catch (error) {
         if (error?.cause?.status) {
             throw error;
@@ -41,5 +49,3 @@ const authorizeRequest = async (request, context) => {
         throwHttpError(401, 'Unauthorized: Invalid or expired token.');
     }
 };
-
-export { authorizeRequest };

@@ -30,6 +30,60 @@ resource "azapi_resource" "messages" {
 }
 
 # --------------------------------------------------------------------------
+# App Data Blob Container + Seed Blobs
+# --------------------------------------------------------------------------
+
+resource "azurerm_storage_container" "appData" {
+  name                  = "appdata"
+  storage_account_id    = azurerm_storage_account.sharepass.id
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "config" {
+  name                 = "config"
+  storage_container_id = azurerm_storage_container.appData.id
+  type                 = "Block"
+  content_type         = "application/json"
+
+  source_content = jsonencode({
+    auth_google_client_id = var.auth_google_client_id
+    expiration_options = [
+      {
+        value = "1"
+        label = "1 Hour"
+      },
+      {
+        value = "24"
+        label = "1 Day"
+      },
+      {
+        value = "168"
+        label = "1 Week"
+      }
+    ]
+  })
+
+  lifecycle {
+    ignore_changes = [source_content]
+  }
+}
+
+resource "azurerm_storage_blob" "users" {
+  name                 = "users"
+  storage_container_id = azurerm_storage_container.appData.id
+  type                 = "Block"
+  content_type         = "application/json"
+
+  source_content = jsonencode({
+    "soerenkoehler@gmail.com" = ["admin", "write"]
+  })
+
+  lifecycle {
+    ignore_changes = [source_content]
+  }
+}
+
+# --------------------------------------------------------------------------
 # Function App Deployment Container
 # --------------------------------------------------------------------------
 

@@ -1,16 +1,13 @@
 import { TableClient } from '@azure/data-tables';
+import { BlobServiceClient } from '@azure/storage-blob';
 import { DefaultAzureCredential } from "@azure/identity";
 import { randomUUID } from 'node:crypto';
 
 let cached = null;
 
-const EXPIRATION_OPTIONS = Object.freeze([
-    { value: '1', label: '1 Hour' },
-    { value: '24', label: '1 Day' },
-    { value: '168', label: '1 Week' },
-]);
-
-const ALLOWED_EXPIRATIONS = new Set(EXPIRATION_OPTIONS.map((option) => option.value));
+const CONFIG_BLOB_NAME = 'config';
+const USERS_BLOB_NAME = 'users';
+const APP_DATA_CONTAINER_NAME = 'appdata'; // XXX
 
 const formatTimestamp = () => {
     const now = new Date();
@@ -27,41 +24,90 @@ const generateRowKey = () => {
     return `${formatTimestamp()}_${randomUUID()}`;
 };
 
-const validateExpiration = (expiration) => {
-    const normalized = String(expiration ?? '').trim();
-    if (!ALLOWED_EXPIRATIONS.has(normalized)) {
-        throw new Error(
-            `Unsupported expiration '${expiration}'`
-        );
+const streamToString = async (readableStream) => {
+    const chunks = [];
+    for await (const chunk of readableStream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
-    return normalized;
+    return Buffer.concat(chunks).toString('utf8');
 };
 
-export const tableClient = async () => {
-    if (cached) {
-        return cached;
-    }
-
-    const connectionString = process.env.TableConnectionString;
+const connect(connectionString, fromEndpoint, fromConnectionString) => {
     if (!connectionString) {
         throw new Error('TableConnectionString environment variable is not defined.');
     }
 
+    const serviceClient = connectionString.startsWith('http')
+        ? fromEndpoint(connectionString, new DefaultAzureCredential())
+        : fromConnectionString(connectionString);
+
+    return serviceClient;
+}
+
+export const client = async () => {
+    if (cached) {
+        return cached;
+    }
+
     const tableName = 'messages';
-    const tableClient = connectionString.startsWith('http')
-        ? new TableClient(connectionString, tableName, new DefaultAzureCredential())
-        : TableClient.fromConnectionString(connectionString, tableName);
-    await tableClient.createTable();
+    const messageTable = connect(
+        process.env.TableConnectionString,
+        (conn, cred) => new TableClient(conn, tableName, cred),
+        (conn, cred) => TableClient.fromConnectionString(conn, tableName)
+    );
+    await messageTable.createTable();
+
+    const appDataContainer = connect(
+        process.env.BlobConnectionString,
+        (conn, cred) => new BlobServiceClient(conn, cred),
+        (conn, cred) => BlobServiceClient.fromConnectionString(conn)
+    ).getContainerClient(APP_DATA_CONTAINER_NAME);
+    await appDataContainer.createIfNotExists();
+
+    const readJsonBlob = async (blobName) => {
+        const blobClient = appDataContainer.getBlobClient(blobName);
+        try {
+            const download = await blobClient.download();
+            const raw = await streamToString(download.readableStreamBody);
+            return JSON.parse(raw);
+        } catch (error) {
+            if (error?.statusCode === 404) {
+                throw new Error(`Blob '${blobName}' not found in container '${APP_DATA_CONTAINER_NAME}'.`);
+            }
+            if (error instanceof SyntaxError) {
+                throw new Error(`Blob '${blobName}' contains invalid JSON.`);
+            }
+            throw error;
+        }
+    };
+
+    const validateExpiration = (expiration) => {
+        const normalized = String(expiration ?? '').trim();
+        const config = await readJsonBlob(CONFIG_BLOB_NAME);
+        const options = Array.isArray(config?.expiration_options) ? config.expiration_options : [];
+        const allowedExpirations = new Set(options.map((option) => String(option?.value ?? '').trim()));
+
+        if (!allowedExpirations.has(normalized)) {
+            throw new Error(
+                `Unsupported expiration '${expiration}'`
+            );
+        }
+        return normalized;
+    };
 
     const client = {
-        getExpirationOptions: () => {
-            return EXPIRATION_OPTIONS.map((option) => ({ ...option }));
+        config: async () => {
+            return readJsonBlob(CONFIG_BLOB_NAME);
         },
 
-        writeMessage: async (expiration, message) => {
+        users: async () => {
+            return readJsonBlob(USERS_BLOB_NAME);
+        },
+
+        write: async (expiration, message) => {
             const partitionKey = validateExpiration(expiration);
             const rowKey = generateRowKey();
-            await tableClient.createEntity({
+            await messageTable.createEntity({
                 partitionKey,
                 rowKey,
                 value: String(message),
@@ -70,10 +116,10 @@ export const tableClient = async () => {
             return rowKey;
         },
 
-        readMessage: async (expiration, rowKey) => {
+        read: async (expiration, rowKey) => {
             const partitionKey = validateExpiration(expiration);
             try {
-                const entity = await tableClient.getEntity(partitionKey, rowKey);
+                const entity = await messageTable.getEntity(partitionKey, rowKey);
                 return entity.value ?? '';
             } catch (error) {
                 if (error?.statusCode === 404) {
@@ -83,9 +129,9 @@ export const tableClient = async () => {
             }
         },
 
-        deleteMessage: async (expiration, rowKey) => {
+        delete: async (expiration, rowKey) => {
             const partitionKey = validateExpiration(expiration);
-            await tableClient.deleteEntity(partitionKey, rowKey);
+            await messageTable.deleteEntity(partitionKey, rowKey);
         }
     };
 

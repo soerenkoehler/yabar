@@ -1,5 +1,5 @@
 import { app } from '@azure/functions';
-import { tableClient } from './tableClient.js';
+import { tableClient } from './client.js';
 
 app.http('config', {
     methods: ['GET'],
@@ -9,14 +9,11 @@ app.http('config', {
 
         try {
             const client = await tableClient();
-            const expirationOptions = client.getExpirationOptions();
+            const config = await client.config();
 
             return {
                 status: 200,
-                jsonBody: {
-                    auth_google_client_id: process.env.AUTH_GOOGLE_CLIENT_ID,
-                    expiration_options: expirationOptions
-                }
+                jsonBody: config
             };
         } catch (error) {
             context.error(`Failed to process request: ${error.message}`);
