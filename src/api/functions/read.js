@@ -29,9 +29,9 @@ app.http('read', {
             const client = await getClient();
 
             try {
-                const value = await client.readMessage(expiration, id);
+                const value = await client.read(expiration, id);
 
-                await client.deleteMessage(expiration, id);
+                await client.delete(expiration, id);
 
                 return {
                     status: 200,

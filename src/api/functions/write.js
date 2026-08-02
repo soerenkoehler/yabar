@@ -30,7 +30,7 @@ app.http('write', {
             let id;
             try {
                 const client = await getClient();
-                id = await client.writeMessage(expiration, value);
+                id = await client.write(expiration, value);
             } catch (error) {
                 if (error.message.includes('Unsupported expiration')) {
                     throwHttpError(400, error.message);

@@ -14,7 +14,7 @@ export const authorizeRequest = async (request, context) => {
     try {
         const client = await getClient();
 
-        const config = await client.getConfig();
+        const config = await client.config();
         const authGoogleClientId = String(config?.auth_google_client_id ?? '').trim();
         if (!authGoogleClientId) {
             throw new Error("Missing 'auth_google_client_id' in config blob.");
@@ -35,8 +35,8 @@ export const authorizeRequest = async (request, context) => {
             throwHttpError(401, 'Unauthorized: Email is not verified.');
         }
 
-        const users = await client.getUsers();
-        return user?.[userEmail] ?? [];
+        const users = await client.users();
+        return users?.[userEmail] ?? [];
     } catch (error) {
         if (error?.cause?.status) {
             throw error;

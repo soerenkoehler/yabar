@@ -134,7 +134,7 @@ const initPage = async () => {
         }
 
         const client = await apiClient(config.api_hostname);
-        const backendConfig = await client.getConfig();
+        const backendConfig = await client.config();
         config = { ...config, ...backendConfig };
         renderExpirationOptions(writeMessageInputExpiration, config.expiration_options ?? []);
         backendConfigLoaded = true;
@@ -205,7 +205,7 @@ const initPage = async () => {
         try {
             const client = await apiClient(config.api_hostname);
             const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
-            const value = await client.readMessage(urlQueryToken?.expiration, urlQueryToken?.id);
+            const value = await client.read(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = value;
             setGlobalState('state-success');
         } catch (error) {
@@ -220,7 +220,7 @@ const initPage = async () => {
 
         try {
             const client = await apiClient(config.api_hostname);
-            const id = await client.writeMessage(writeMessageInputExpiration.value, writeMessageInputText.value);
+            const id = await client.write(writeMessageInputExpiration.value, writeMessageInputText.value);
             const key = crypto.randomUUID();
 
             createLink(writeMessageOutputUrlTwoStep, {

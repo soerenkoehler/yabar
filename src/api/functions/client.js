@@ -105,7 +105,7 @@ export const getClient = async () => {
         },
 
         write: async (expiration, message) => {
-            const partitionKey = validateExpiration(expiration);
+            const partitionKey = await validateExpiration(expiration);
             const rowKey = generateRowKey();
             await messageTable.createEntity({
                 partitionKey,
@@ -117,7 +117,7 @@ export const getClient = async () => {
         },
 
         read: async (expiration, rowKey) => {
-            const partitionKey = validateExpiration(expiration);
+            const partitionKey = await validateExpiration(expiration);
             try {
                 const entity = await messageTable.getEntity(partitionKey, rowKey);
                 return entity.value ?? '';
@@ -130,7 +130,7 @@ export const getClient = async () => {
         },
 
         delete: async (expiration, rowKey) => {
-            const partitionKey = validateExpiration(expiration);
+            const partitionKey = await validateExpiration(expiration);
             await messageTable.deleteEntity(partitionKey, rowKey);
         }
     };
