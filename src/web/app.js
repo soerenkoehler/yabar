@@ -39,7 +39,7 @@ const renderExpirationOptions = (selectElement, options) => {
 const initPage = async () => {
     const topMenu = document.getElementById('topMenu');
 
-    const mainPage = document.getElementById('mainPage');
+    const globalState = document.getElementById('globalState');
     const mainPageStatus = document.getElementById('mainPageStatus');
 
     const topMenuModeWrite = document.getElementById('topMenuModeWrite');
@@ -69,15 +69,15 @@ const initPage = async () => {
 
     const setAuthenticated = (authenticated) => {
         isAuthenticated = authenticated;
-        topMenu.classList.remove(
+        globalState.classList.remove(
             'auth-logged-in',
             'auth-logged-out'
         );
-        topMenu.classList.add(authenticated ? 'auth-logged-in' : 'auth-logged-out');
+        globalState.classList.add(authenticated ? 'auth-logged-in' : 'auth-logged-out');
     };
 
     const setGlobalState = (stateClass = '', statusText = '') => {
-        mainPage.classList.remove(
+        globalState.classList.remove(
             'state-idle',
             'state-input',
             'state-submitting',
@@ -85,18 +85,18 @@ const initPage = async () => {
             'state-success'
         );
         if (stateClass) {
-            mainPage.classList.add(stateClass);
+            globalState.classList.add(stateClass);
         }
         mainPageStatus.textContent = statusText;
     };
 
     const setGlobalMode = (modeClass = '') => {
-        mainPage.classList.remove(
+        globalState.classList.remove(
             'mode-reading',
             'mode-writing'
         );
         if (modeClass) {
-            mainPage.classList.add(modeClass);
+            globalState.classList.add(modeClass);
         }
 
         topMenuModeWrite.setAttribute('aria-selected', String(modeClass === 'mode-writing'));
