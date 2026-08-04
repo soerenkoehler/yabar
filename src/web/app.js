@@ -98,6 +98,10 @@ const initPage = async () => {
         if (modeClass) {
             mainPage.classList.add(modeClass);
         }
+
+        topMenuModeWrite.setAttribute('aria-selected', String(modeClass === 'mode-writing'));
+        topMenuModeRead.setAttribute('aria-selected', String(modeClass === 'mode-reading'));
+
         readMessageInputMessageId.dispatchEvent(new Event('input', { bubbles: true }));
     };
 

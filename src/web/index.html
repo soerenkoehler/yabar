@@ -88,6 +88,114 @@
         button:disabled {
             cursor: not-allowed;
         }
+
+        #topMenu {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        #topMenuLogin {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        #topMenuMain {
+            --tab-bg: #f4f6f9;
+            --tab-fg: #3f4f61;
+            --tab-border: #d6dce5;
+            --tab-active-bg: #ffffff;
+            --tab-active-fg: #14213d;
+            --tab-active-border: #a6b5c9;
+
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem;
+            gap: 0.25rem;
+            border: 1px solid var(--tab-border);
+            border-radius: 999px;
+            background: linear-gradient(180deg, #fafbfd 0%, #f1f4f8 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        #topMenuMain button {
+            min-width: 9rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background-color: var(--tab-bg);
+            color: var(--tab-fg);
+            font-weight: 600;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        #topMenuMain button:hover {
+            background-color: #e8edf4;
+            color: #223347;
+        }
+
+        #topMenuMain button:focus-visible {
+            outline: none;
+            border-color: #7d9cc5;
+            box-shadow: 0 0 0 2px rgba(125, 156, 197, 0.35);
+        }
+
+        #topMenuMain button[aria-selected="true"] {
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-fg);
+            border-color: var(--tab-active-border);
+            box-shadow: 0 2px 6px rgba(13, 35, 66, 0.14);
+        }
+
+        form button[type="submit"] {
+            --submit-bg: #f4f6f9;
+            --submit-fg: #223347;
+            --submit-border: #a6b5c9;
+
+            min-width: 8rem;
+            border: 1px solid var(--submit-border);
+            border-radius: 999px;
+            background: linear-gradient(180deg, #ffffff 0%, var(--submit-bg) 100%);
+            color: var(--submit-fg);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(13, 35, 66, 0.12);
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        form button[type="submit"]:hover:not(:disabled) {
+            background: linear-gradient(180deg, #ffffff 0%, #e8edf4 100%);
+            color: #14213d;
+            box-shadow: 0 2px 6px rgba(13, 35, 66, 0.16);
+        }
+
+        form button[type="submit"]:focus-visible {
+            outline: none;
+            border-color: #7d9cc5;
+            box-shadow: 0 0 0 2px rgba(125, 156, 197, 0.35), 0 1px 3px rgba(13, 35, 66, 0.12);
+        }
+
+        form button[type="submit"]:disabled {
+            background: #edf1f6;
+            color: #7a8696;
+            border-color: #d4dbe4;
+            box-shadow: none;
+            opacity: 0.85;
+        }
+
+        @media (max-width: 640px) {
+            #topMenuMain {
+                width: 100%;
+            }
+
+            #topMenuMain button {
+                flex: 1;
+                min-width: 0;
+            }
+        }
     </style>
     <style>
         /* Logout Button matching Google Standard Button geometry and typography */
@@ -130,6 +238,10 @@
 
 <body>
     <div id="topMenu">
+        <div id="topMenuMain" role="tablist" aria-label="Message mode selector">
+            <button id="topMenuModeWrite" type="button" role="tab" aria-selected="false" aria-controls="writeMessageSection">New Message</button>
+            <button id="topMenuModeRead" type="button" role="tab" aria-selected="false" aria-controls="readMessageSection">Read Message</button>
+        </div>
         <div id="topMenuLogin">
             <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
             <div id="loginButton" class="g_id_signin" data-type="icon" data-shape="square" data-theme="outline"
@@ -144,17 +256,10 @@
             </button>
             <div id="authStatus">Not logged in</div>
         </div>
-
-        <div id="topMenuMain">
-            <button id="topMenuModeWrite" type="button">New Message</button>
-            <button id="topMenuModeRead" type="button">Read Message</button>
-        </div>
     </div>
 
     <div id="mainPage">
         <section id="writeMessageSection">
-            <h1>Write Message</h1>
-
             <form id="writeMessageInputForm">
                 <div class="form-group">
                     <label>Expires In:
@@ -188,8 +293,6 @@
         </section>
 
         <section id="readMessageSection">
-            <h1>Read Message</h1>
-
             <form id="readMessageInputForm">
                 <div class="form-group">
                     <label>
