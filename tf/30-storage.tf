@@ -45,23 +45,25 @@ resource "azurerm_storage_blob" "config" {
   type                 = "Block"
   content_type         = "application/json"
 
-  source_content = jsonencode({
-    auth_google_client_id = var.auth_google_client_id
-    expiration_options = [
-      {
-        value = "1"
-        label = "1 Hour"
-      },
-      {
-        value = "24"
-        label = "1 Day"
-      },
-      {
-        value = "168"
-        label = "1 Week"
-      }
-    ]
-  })
+  source_content = <<-EOT
+    {
+      "auth_google_client_id": "${var.auth_google_client_id}"
+      "expiration_options": [
+        {
+          "value": "1"
+          "label": "1 Hour"
+        },
+        {
+          "value": "24"
+          "label": "1 Day"
+        },
+        {
+          "value": "168"
+          "label": "1 Week"
+        }
+      ]
+    }
+  EOT
 
   lifecycle {
     ignore_changes = [source_content]
@@ -74,9 +76,11 @@ resource "azurerm_storage_blob" "users" {
   type                 = "Block"
   content_type         = "application/json"
 
-  source_content = jsonencode({
-    "soerenkoehler@gmail.com" = ["admin", "write"]
-  })
+  source_content = <<-EOT
+    {
+      "test-user@example.com": ["admin", "write"]
+    }
+  EOT
 
   lifecycle {
     ignore_changes = [source_content]
