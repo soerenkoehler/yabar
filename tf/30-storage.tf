@@ -47,18 +47,18 @@ resource "azurerm_storage_blob" "config" {
 
   source_content = <<-EOT
     {
-      "auth_google_client_id": "${var.auth_google_client_id}"
+      "auth_google_client_id": "${var.auth_google_client_id}",
       "expiration_options": [
         {
-          "value": "1"
+          "value": "1",
           "label": "1 Hour"
         },
         {
-          "value": "24"
+          "value": "24",
           "label": "1 Day"
         },
         {
-          "value": "168"
+          "value": "168",
           "label": "1 Week"
         }
       ]
