@@ -146,8 +146,7 @@ const initPage = async () => {
             return;
         }
 
-        const client = await apiClient(config.api_hostname);
-        const backendConfig = await client.config();
+        const backendConfig = await apiClient(config.api_hostname).config();
         config = { ...config, ...backendConfig };
         renderExpirationOptions(writeMessageInputExpiration, config.expiration_options ?? []);
         backendConfigLoaded = true;
@@ -167,8 +166,7 @@ const initPage = async () => {
         setAuthenticated(isLoggedIn);
         if (isLoggedIn) {
             try {
-                const client = await apiClient(config.api_hostname);
-                const { roles = [] } = await client.roles();
+                const { roles = [] } = await apiClient(config.api_hostname).roles();
                 setInitialMode();
                 setModeRestrictions(roles);
                 setGlobalState('state-input');
@@ -219,9 +217,8 @@ const initPage = async () => {
         setGlobalState('state-submitting', 'Loading...');
 
         try {
-            const client = await apiClient(config.api_hostname);
             const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
-            const value = await client.read(urlQueryToken?.expiration, urlQueryToken?.id);
+            const value = await apiClient(config.api_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = value;
             setGlobalState('state-success');
         } catch (error) {
@@ -235,8 +232,7 @@ const initPage = async () => {
         setGlobalState('state-submitting', 'Submitting...');
 
         try {
-            const client = await apiClient(config.api_hostname);
-            const id = await client.write(writeMessageInputExpiration.value, writeMessageInputText.value);
+            const id = await apiClient(config.api_hostname).write(writeMessageInputExpiration.value, writeMessageInputText.value);
             const key = crypto.randomUUID();
 
             createLink(writeMessageOutputUrlTwoStep, {

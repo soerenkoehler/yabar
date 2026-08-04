@@ -9,7 +9,7 @@ const getRequestHeaders = () => {
     } : {};
 };
 
-export const apiClient = async (api_hostname) => {
+export const apiClient = (api_hostname) => {
     if (cached) {
         return cached;
     }
