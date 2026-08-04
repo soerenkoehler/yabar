@@ -17,7 +17,7 @@ export const authorizeRequest = async (request, context) => {
         const config = await client.config();
         const authGoogleClientId = String(config?.auth_google_client_id ?? '').trim();
         if (!authGoogleClientId) {
-            throw new Error("Missing 'auth_google_client_id' in config blob.");
+            throw new Error("Missing 'auth_google_client_id' in config.");
         }
 
         const authClient = new OAuth2Client(authGoogleClientId);

@@ -11,8 +11,8 @@ app.http('read', {
 
         try {
             const roles = await authorizeRequest(request, context);
-            context.log('Authorized roles:', roles);
-            // FIXME evaluate roles
+
+            // when authorizeRequest succeedes we are fine to proceed
 
             const body = await request.json();
 

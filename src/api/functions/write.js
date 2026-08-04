@@ -11,8 +11,10 @@ app.http('write', {
 
         try {
             const roles = await authorizeRequest(request, context);
-            context.log('Authorized roles:', roles);
-            // FIXME evaluate roles
+
+            if (!roles.includes('write')) {
+                throwHttpError(403, "User not authorized for operation");
+            }
 
             const body = await request.json();
 

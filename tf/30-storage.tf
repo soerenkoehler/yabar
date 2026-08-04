@@ -50,16 +50,24 @@ resource "azurerm_storage_blob" "config" {
       "auth_google_client_id": "${var.auth_google_client_id}",
       "expiration_options": [
         {
-          "value": "1",
-          "label": "1 Hour"
+            "value": "PT5M",
+            "label": "5min",
         },
         {
-          "value": "24",
-          "label": "1 Day"
+            "value": "PT15M",
+            "label": "15min",
         },
         {
-          "value": "168",
-          "label": "1 Week"
+            "value": "PT1H",
+            "label": "1 Hour",
+        },
+        {
+            "value": "P1D",
+            "label": "1 Day",
+        },
+        {
+            "value": "P1W",
+            "label": "1 Week",
         }
       ]
     }

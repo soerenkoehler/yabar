@@ -172,14 +172,12 @@ export const getClient = async () => {
             const durationByPartition = new Map();
             for (const expiration of allowedExpirations) {
                 const durationMs = parseDurationToMilliseconds(expiration);
-                if (durationMs !== null) {
+                if (durationMs != null) {
                     durationByPartition.set(expiration, durationMs);
                 }
             }
 
             const now = Date.now();
-            let deletedInvalidPartition = 0;
-            let deletedExpired = 0;
 
             for await (const entity of messageTable.listEntities()) {
                 const partitionKey = String(entity.partitionKey ?? '');
@@ -187,31 +185,25 @@ export const getClient = async () => {
 
                 if (!allowedExpirations.has(partitionKey)) {
                     await messageTable.deleteEntity(partitionKey, rowKey);
-                    deletedInvalidPartition += 1;
                     continue;
                 }
 
                 const durationMs = durationByPartition.get(partitionKey);
-                if (durationMs === undefined) {
+                if (durationMs == null) {
+                    await messageTable.deleteEntity(partitionKey, rowKey);
                     continue;
                 }
 
                 const createdAt = parseTimestampFromRowKey(rowKey);
-                if (!createdAt) {
+                if (createdAt == null) {
+                    await messageTable.deleteEntity(partitionKey, rowKey);
                     continue;
                 }
 
                 if (now - createdAt.getTime() > durationMs) {
                     await messageTable.deleteEntity(partitionKey, rowKey);
-                    deletedExpired += 1;
                 }
             }
-
-            return {
-                deletedInvalidPartition,
-                deletedExpired,
-                deletedTotal: deletedInvalidPartition + deletedExpired
-            };
         }
     };
 
