@@ -105,6 +105,15 @@ const initPage = async () => {
         readMessageInputMessageId.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
+    const setModeRestrictions = (roles) => {
+        const hasWriteRole = roles.includes('write');
+        topMenuModeWrite.disabled = !hasWriteRole;
+
+        if (!hasWriteRole) {
+            setGlobalMode('mode-reading');
+        }
+    };
+
     const setInitialMode = () => {
         const urlQuery = decodeURIComponent(window.location.search.slice(1));
 
@@ -158,7 +167,10 @@ const initPage = async () => {
         setAuthenticated(isLoggedIn);
         if (isLoggedIn) {
             try {
+                const client = await apiClient(config.api_hostname);
+                const { roles = [] } = await client.roles();
                 setInitialMode();
+                setModeRestrictions(roles);
                 setGlobalState('state-input');
                 updateSubmitButtons();
             } catch (error) {

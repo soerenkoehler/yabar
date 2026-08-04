@@ -31,6 +31,23 @@ export const apiClient = async (api_hostname) => {
             return response.json();
         },
 
+        roles: async () => {
+            const response = await fetch(
+                `${api_hostname}/api/roles`,
+                {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error (${response.status}): ${errorText}`);
+            }
+
+            return response.json();
+        },
+
         read: async (expiration, id) => {
             const response = await fetch(
                 `${api_hostname}/api/read`,
