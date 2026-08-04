@@ -1,27 +1,56 @@
 import { TableClient } from '@azure/data-tables';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { DefaultAzureCredential } from "@azure/identity";
+import { Temporal } from '@js-temporal/polyfill'; // XXX required before node 26
 import { randomUUID } from 'node:crypto';
 
 let cached = null;
 
+const APP_DATA_CONTAINER_NAME = 'appdata';
 const CONFIG_BLOB_NAME = 'config';
 const USERS_BLOB_NAME = 'users';
-const APP_DATA_CONTAINER_NAME = 'appdata'; // XXX
-
-const formatTimestamp = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-};
 
 const generateRowKey = () => {
-    return `${formatTimestamp()}_${randomUUID()}`;
+    return `${Date.now()}_${randomUUID()}`;
+};
+
+const parseDurationToMilliseconds = (duration) => {
+    const normalized = String(duration ?? '').trim();
+    if (!normalized) {
+        return null;
+    }
+
+    try {
+        const parsed = Temporal.Duration.from(normalized);
+        const hasCalendarUnits = parsed.years !== 0 || parsed.months !== 0;
+        if (hasCalendarUnits) {
+            return null;
+        }
+
+        const total = parsed.total({ unit: 'milliseconds' });
+        return Number.isFinite(total) && total > 0 ? total : null;
+    } catch {
+        return null;
+    }
+};
+
+const parseTimestampFromRowKey = (rowKey) => {
+    const [rawTimestamp] = String(rowKey ?? '').split('_');
+    if (!/^\d+$/.test(rawTimestamp)) {
+        return null;
+    }
+
+    const timestampMs = Number(rawTimestamp);
+    if (!Number.isFinite(timestampMs) || timestampMs < 0) {
+        return null;
+    }
+
+    const createdAt = new Date(timestampMs);
+    if (Number.isNaN(createdAt.getTime())) {
+        return null;
+    }
+
+    return createdAt;
 };
 
 const streamToString = async (readableStream) => {
@@ -81,11 +110,15 @@ export const getClient = async () => {
         }
     };
 
-    const validateExpiration = async (expiration) => {
-        const normalized = String(expiration ?? '').trim();
+    const getAllowedExpirations = async () => {
         const config = await readJsonBlob(CONFIG_BLOB_NAME);
         const options = Array.isArray(config?.expiration_options) ? config.expiration_options : [];
-        const allowedExpirations = new Set(options.map((option) => String(option?.value ?? '').trim()));
+        return new Set(options.map((option) => String(option?.value ?? '').trim()));
+    };
+
+    const validateExpiration = async (expiration) => {
+        const normalized = String(expiration ?? '').trim();
+        const allowedExpirations = await getAllowedExpirations();
 
         if (!allowedExpirations.has(normalized)) {
             throw new Error(
@@ -132,6 +165,53 @@ export const getClient = async () => {
         delete: async (expiration, rowKey) => {
             const partitionKey = await validateExpiration(expiration);
             await messageTable.deleteEntity(partitionKey, rowKey);
+        },
+
+        cleanup: async () => {
+            const allowedExpirations = await getAllowedExpirations();
+            const durationByPartition = new Map();
+            for (const expiration of allowedExpirations) {
+                const durationMs = parseDurationToMilliseconds(expiration);
+                if (durationMs !== null) {
+                    durationByPartition.set(expiration, durationMs);
+                }
+            }
+
+            const now = Date.now();
+            let deletedInvalidPartition = 0;
+            let deletedExpired = 0;
+
+            for await (const entity of messageTable.listEntities()) {
+                const partitionKey = String(entity.partitionKey ?? '');
+                const rowKey = String(entity.rowKey ?? '');
+
+                if (!allowedExpirations.has(partitionKey)) {
+                    await messageTable.deleteEntity(partitionKey, rowKey);
+                    deletedInvalidPartition += 1;
+                    continue;
+                }
+
+                const durationMs = durationByPartition.get(partitionKey);
+                if (durationMs === undefined) {
+                    continue;
+                }
+
+                const createdAt = parseTimestampFromRowKey(rowKey);
+                if (!createdAt) {
+                    continue;
+                }
+
+                if (now - createdAt.getTime() > durationMs) {
+                    await messageTable.deleteEntity(partitionKey, rowKey);
+                    deletedExpired += 1;
+                }
+            }
+
+            return {
+                deletedInvalidPartition,
+                deletedExpired,
+                deletedTotal: deletedInvalidPartition + deletedExpired
+            };
         }
     };
 

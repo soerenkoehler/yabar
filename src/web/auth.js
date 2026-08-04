@@ -7,7 +7,6 @@ const loginDataBinder = document.getElementById('g_id_onload');
 const loginButton = document.getElementById('loginButton');
 const logoutButton = document.getElementById('logoutButton');
 const authStatus = document.getElementById('authStatus');
-// FIXME const loginButton = document.querySelector('.g_id_signin');
 
 const notifyAuthStateChanged = () => {
     if (!authStateChangedListener) {
