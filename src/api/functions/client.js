@@ -185,7 +185,7 @@ export const getClient = async () => {
 
                 const deleteAndLog = async () => {
                     await messageTable.deleteEntity(partitionKey, rowKey);
-                    console.log(`deleted message ${rowKey} from ${partitionKey}`)
+                    console.log(`deleted message ${rowKey} from ${partitionKey}`);
                 }
 
                 if (!allowedExpirations.has(partitionKey)) {
@@ -206,7 +206,7 @@ export const getClient = async () => {
                 }
 
                 if (now - createdAt.getTime() > durationMs) {
-                    await deleteAndLog;
+                    await deleteAndLog();
                 }
             }
         }
