@@ -183,25 +183,30 @@ export const getClient = async () => {
                 const partitionKey = String(entity.partitionKey ?? '');
                 const rowKey = String(entity.rowKey ?? '');
 
-                if (!allowedExpirations.has(partitionKey)) {
+                const deleteAndLog = async () => {
                     await messageTable.deleteEntity(partitionKey, rowKey);
+                    console.log(`deleted message ${rowKey} from ${partitionKey}`)
+                }
+
+                if (!allowedExpirations.has(partitionKey)) {
+                    await deleteAndLog();
                     continue;
                 }
 
                 const durationMs = durationByPartition.get(partitionKey);
                 if (durationMs == null) {
-                    await messageTable.deleteEntity(partitionKey, rowKey);
+                    await deleteAndLog();
                     continue;
                 }
 
                 const createdAt = parseTimestampFromRowKey(rowKey);
                 if (createdAt == null) {
-                    await messageTable.deleteEntity(partitionKey, rowKey);
+                    await deleteAndLog();
                     continue;
                 }
 
                 if (now - createdAt.getTime() > durationMs) {
-                    await messageTable.deleteEntity(partitionKey, rowKey);
+                    await deleteAndLog;
                 }
             }
         }

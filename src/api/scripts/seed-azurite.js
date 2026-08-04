@@ -29,9 +29,26 @@ const TABLE_NAME = 'messages';
 const CONFIG_BLOB_DEFAULTS = {
     auth_google_client_id: '',
     expiration_options: [
-        { value: '1',   label: '1 Hour' },
-        { value: '24',  label: '1 Day' },
-        { value: '168', label: '1 Week' },
+        {
+            "value": "PT5M",
+            "label": "5min",
+        },
+        {
+            "value": "PT15M",
+            "label": "15min",
+        },
+        {
+            "value": "PT1H",
+            "label": "1 Hour",
+        },
+        {
+            "value": "P1D",
+            "label": "1 Day",
+        },
+        {
+            "value": "P1W",
+            "label": "1 Week",
+        }
     ],
 };
 

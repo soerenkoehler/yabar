@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "expiration": "1",
+        "expiration": "PT5M",
         "value": "test"
       }
   auth: inherit
