@@ -42,7 +42,6 @@ app.http('read', {
                 if (error.message.includes('Unsupported expiration')) {
                     throwHttpError(400, error.message);
                 }
-                // FIXME explicitly check for existence in advance
                 if (error.message.includes('not found')) {
                     throwHttpError(404, `Message with id ${id} not found.`);
                 }

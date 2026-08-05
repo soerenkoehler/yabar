@@ -30,7 +30,7 @@ const CONFIG_BLOB_DEFAULTS = {
     auth_google_client_id: '',
     expiration_options: [
         {
-            "value": "PT1M", // XXX Debug
+            "value": "PT1M",
             "label": "1min",
         },
         {
@@ -40,14 +40,6 @@ const CONFIG_BLOB_DEFAULTS = {
         {
             "value": "PT1H",
             "label": "1 Hour",
-        },
-        {
-            "value": "P1D",
-            "label": "1 Day",
-        },
-        {
-            "value": "P1W",
-            "label": "1 Week",
         }
     ],
 };

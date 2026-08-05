@@ -4,6 +4,7 @@ let currentUserHint = null;
 let authStateChangedListener = null;
 
 const loginDataBinder = document.getElementById('g_id_onload');
+const loginDataBinderClientId = 'data-client_id';
 const loginButton = document.getElementById('loginButton');
 const logoutButton = document.getElementById('logoutButton');
 const authStatus = document.getElementById('authStatus');
@@ -36,8 +37,8 @@ const setAuthButtonVisibility = (isLoggedIn) => {
     }
 };
 
-const setLoggedIn = (username, userHint) => {
-    authStatus.textContent = `logged in as ${username}`;
+const setLoggedIn = (displayName, userHint) => {
+    authStatus.textContent = `logged in as ${displayName}`;
     setAuthButtonVisibility(true);
     currentUserHint = userHint || null;
     notifyAuthStateChanged();
@@ -84,12 +85,10 @@ const loadGoogleGsiScript = () => {
 };
 
 export const authClient = (client_id, listener) => {
-    // FIXME check if the test is necessary in this form
-    if (!logoutButton || logoutButton.dataset.boundLogoutHandler === 'true') {
+    if (loginDataBinder.getAttribute(loginDataBinderClientId).trim().length > 0) {
         return;
     }
-
-    loginDataBinder.setAttribute('data-client_id', `${client_id || ''}`);
+    loginDataBinder.setAttribute(loginDataBinderClientId, `${client_id || ''}`);
 
     loadGoogleGsiScript();
 
