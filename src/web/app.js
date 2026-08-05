@@ -3,6 +3,29 @@ import { apiClient } from './api.js';
 import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
 
 let config = {};
+let backendConfigLoaded = false;
+
+const loadConfig = async () => {
+    if (configLoaded) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/config.json', { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Failed to load config.json (${response.status})`);
+        }
+        config = await response.json();
+
+        const backendConfig = await apiClient(config.api_hostname).config();
+        config = { ...config, ...backendConfig };
+
+        configLoaded = true;
+    } catch (error) {
+        console.error('Could not load config', error);
+        config = {};
+    }
+};
 
 const createLink = (element, data) => {
     const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
@@ -10,19 +33,6 @@ const createLink = (element, data) => {
 
     element.href = `${window.location.origin}?${token}`;
     element.textContent = `${window.location.origin}?${shortToken}`;
-};
-
-const loadConfig = async () => {
-    try {
-        const response = await fetch('/config.json', { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`Failed to load config.json (${response.status})`);
-        }
-        config = await response.json();
-    } catch (error) {
-        console.error('Could not load config.json:', error);
-        config = {};
-    }
 };
 
 const renderExpirationOptions = (selectElement, options) => {
@@ -37,6 +47,8 @@ const renderExpirationOptions = (selectElement, options) => {
 };
 
 const initPage = async () => {
+    let isAuthenticated = false;
+
     const topMenu = document.getElementById('topMenu');
 
     const globalState = document.getElementById('globalState');
@@ -55,6 +67,7 @@ const initPage = async () => {
     const writeMessageInputExpiration = document.getElementById('writeMessageInputExpiration');
     const writeMessageOutputUrlTwoStep = document.getElementById('writeMessageOutputUrlTwoStep');
     const writeMessageOutputTwoStepKey = document.getElementById('writeMessageOutputKeyTwoStep');
+    const writeMessageOutputRowOneClick = document.getElementById('writeMessageOutputRowOneClick');
     const writeMessageOutputUrlOneClick = document.getElementById('writeMessageOutputUrlOneClick');
 
     const updateSubmitButtons = () => {
@@ -63,9 +76,6 @@ const initPage = async () => {
             form.querySelector('button[type="submit"]').disabled = [...inputs].some(i => !i.disabled && i.value.trim() === '');
         }
     };
-
-    let backendConfigLoaded = false;
-    let isAuthenticated = false;
 
     const setAuthenticated = (authenticated) => {
         isAuthenticated = authenticated;
@@ -138,46 +148,7 @@ const initPage = async () => {
         updateSubmitButtons();
     };
 
-    topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
-    topMenuModeRead.addEventListener('click', () => void switchMode('mode-reading'));
-
-    const ensureBackendConfigLoaded = async () => {
-        if (backendConfigLoaded) {
-            return;
-        }
-
-        const backendConfig = await apiClient(config.api_hostname).config();
-        config = { ...config, ...backendConfig };
-        renderExpirationOptions(writeMessageInputExpiration, config.expiration_options ?? []);
-        backendConfigLoaded = true;
-    };
-
-    await loadConfig();
-
-    try {
-        await ensureBackendConfigLoaded();
-    } catch (error) {
-        setGlobalState('state-error', `Could not load config: ${error}`);
-        return;
-    }
-
-    authClient(config.auth_google_client_id, async ({ isLoggedIn }) => {
-        setGlobalState('state-idle');
-        setAuthenticated(isLoggedIn);
-        if (isLoggedIn) {
-            try {
-                const { roles = [] } = await apiClient(config.api_hostname).roles();
-                setInitialMode();
-                setModeRestrictions(roles);
-                setGlobalState('state-input');
-                updateSubmitButtons();
-            } catch (error) {
-                setGlobalState('state-error', `Could not initialize page: ${error}`);
-            }
-        }
-    });
-
-    readMessageInputMessageId.addEventListener('input', async () => {
+    const normalizeMessageIdInput = async () => {
         const inputValue = readMessageInputMessageId.value.trim();
 
         try {
@@ -206,12 +177,9 @@ const initPage = async () => {
         readMessageInputKey.disabled = false;
         readMessageInputKey.placeholder = 'Enter base64 key...';
         updateSubmitButtons();
-    });
+    };
 
-    readMessageInputKey.addEventListener('input', updateSubmitButtons);
-    writeMessageInputText.addEventListener('input', updateSubmitButtons);
-
-    readMessageInputForm.addEventListener('submit', async (event) => {
+    const submitReadForm = async (event) => {
         event.preventDefault();
 
         setGlobalState('state-submitting', 'Loading...');
@@ -222,28 +190,39 @@ const initPage = async () => {
             readMessageOutput.textContent = value;
             setGlobalState('state-success');
         } catch (error) {
-            setGlobalState('state-error', error.message)
+            setGlobalState('state-error', error.message);
         }
-    });
+    };
 
-    writeMessageInputForm.addEventListener('submit', async (event) => {
+    const submitWriteForm = async (event) => {
         event.preventDefault();
 
         setGlobalState('state-submitting', 'Submitting...');
 
         try {
-            const id = await apiClient(config.api_hostname).write(writeMessageInputExpiration.value, writeMessageInputText.value);
+            const expiration = writeMessageInputExpiration.value;
+            const expirationOption = config.expiration_options.find((option) => String(option.value) === expiration);
+            const allowOneClick = expirationOption?.allowOneClick;
+
+            const id = await apiClient(config.api_hostname).write(expiration, writeMessageInputText.value);
             const key = crypto.randomUUID();
 
             createLink(writeMessageOutputUrlTwoStep, {
-                expiration: writeMessageInputExpiration.value, id
+                expiration, id
             });
 
-            writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key)
+            writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key);
 
-            createLink(writeMessageOutputUrlOneClick, {
-                expiration: writeMessageInputExpiration.value, id, key
-            });
+            if (allowOneClick) {
+                writeMessageOutputRowOneClick.hidden = false;
+                createLink(writeMessageOutputUrlOneClick, {
+                    expiration, id, key
+                });
+            } else {
+                writeMessageOutputRowOneClick.hidden = true;
+                writeMessageOutputUrlOneClick.href = '';
+                writeMessageOutputUrlOneClick.textContent = '';
+            }
 
             writeMessageInputText.value = '';
             setGlobalState('state-success');
@@ -256,7 +235,40 @@ const initPage = async () => {
                     : `Network error occurred: ${error.message}`
             );
         }
+    };
+
+    try {
+        await loadConfig();
+    } catch (error) {
+        setGlobalState('state-error', `Could not load config: ${error}`);
+        return;
+    }
+
+    authClient(config.auth_google_client_id, async ({ isLoggedIn }) => {
+        setGlobalState('state-idle');
+        setAuthenticated(isLoggedIn);
+        if (isLoggedIn) {
+            try {
+                const { roles = [] } = await apiClient(config.api_hostname).roles();
+                setInitialMode();
+                setModeRestrictions(roles);
+                setGlobalState('state-input');
+                updateSubmitButtons();
+            } catch (error) {
+                setGlobalState('state-error', `Could not initialize page: ${error}`);
+            }
+        }
     });
+
+    topMenuModeWrite.addEventListener('click', () => void switchMode('mode-writing'));
+    topMenuModeRead.addEventListener('click', () => void switchMode('mode-reading'));
+    writeMessageInputText.addEventListener('input', updateSubmitButtons);
+    readMessageInputKey.addEventListener('input', updateSubmitButtons);
+    readMessageInputMessageId.addEventListener('input', normalizeMessageIdInput);
+    readMessageInputForm.addEventListener('submit', submitReadForm);
+    writeMessageInputForm.addEventListener('submit', submitWriteForm);
+
+    renderExpirationOptions(writeMessageInputExpiration, config.expiration_options);
 }
 
 window.addEventListener('DOMContentLoaded', initPage);
