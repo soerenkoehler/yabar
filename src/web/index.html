@@ -157,6 +157,40 @@
             font-weight: bold
         }
 
+        #writeMessageOutputGrid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: fit-content;
+        }
+
+        .writeMessageOutputRow {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .writeMessageOutputRowHidden {
+            display: none;
+        }
+
+        .writeMessageOutputLabel {
+            min-width: 5rem;
+            color: #5b6775;
+            font-weight: 600;
+        }
+
+        .writeMessageOutputValue {
+            min-width: 0;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        #writeMessageOutputRowOneClick {
+            margin-top: 1em;
+        }
+
         #pageFooter {
             display: flex;
             align-items: center;
@@ -267,17 +301,20 @@
             </form>
 
             <div id="writeMessageOutput">
-                <table>
-                    <tr>
-                        <td>URL</td><td><a id="writeMessageOutputUrlTwoStep" href="" target="_blank" rel="noreferrer noopener"></a></td>
-                    </tr>
-                    <tr>
-                        <td>Key</td><td><span id="writeMessageOutputKeyTwoStep"></span></td>
-                    </tr>
-                    <tr id="writeMessageOutputRowOneClick">
-                        <td>OneClick</td><td><a id="writeMessageOutputUrlOneClick" href="" target="_blank" rel="noreferrer noopener"></a></td>
-                    </tr>
-                </table>
+                <div id="writeMessageOutputGrid">
+                    <div class="writeMessageOutputRow">
+                        <span class="writeMessageOutputLabel">URL</span>
+                        <a class="writeMessageOutputValue" id="writeMessageOutputUrlTwoStep" href="" target="_blank" rel="noreferrer noopener"></a>
+                    </div>
+                    <div class="writeMessageOutputRow">
+                        <span class="writeMessageOutputLabel">Key</span>
+                        <span class="writeMessageOutputValue" id="writeMessageOutputKeyTwoStep"></span>
+                    </div>
+                    <div class="writeMessageOutputRow" id="writeMessageOutputRowOneClick">
+                        <span class="writeMessageOutputLabel">OneClick</span>
+                        <a class="writeMessageOutputValue" id="writeMessageOutputUrlOneClick" href="" target="_blank" rel="noreferrer noopener"></a>
+                    </div>
+                </div>
             </div>
         </section>
 

@@ -3,7 +3,7 @@ import { apiClient } from './api.js';
 import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
 
 let config = {};
-let backendConfigLoaded = false;
+let configLoaded = false;
 
 const loadConfig = async () => {
     if (configLoaded) {
@@ -41,7 +41,8 @@ const renderExpirationOptions = (selectElement, options) => {
     for (const option of options) {
         const optionElement = document.createElement('option');
         optionElement.value = String(option.value);
-        optionElement.textContent = String(option.label);
+        const label = `${String(option.label)}${option.allowOneClick?' (one click enabled)':''}`
+        optionElement.textContent = label;
         selectElement.appendChild(optionElement);
     }
 };
@@ -205,7 +206,7 @@ const initPage = async () => {
             const allowOneClick = expirationOption?.allowOneClick;
 
             const id = await apiClient(config.api_hostname).write(expiration, writeMessageInputText.value);
-            const key = crypto.randomUUID();
+            const key = crypto.randomUUID(); // TODO use for encryption
 
             createLink(writeMessageOutputUrlTwoStep, {
                 expiration, id
@@ -214,16 +215,19 @@ const initPage = async () => {
             writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key);
 
             if (allowOneClick) {
-                writeMessageOutputRowOneClick.hidden = false;
+                writeMessageOutputRowOneClick.classList.remove('writeMessageOutputRowHidden');
+                writeMessageOutputRowOneClick.classList.add('writeMessageOutputRow');
                 createLink(writeMessageOutputUrlOneClick, {
                     expiration, id, key
                 });
             } else {
-                writeMessageOutputRowOneClick.hidden = true;
+                writeMessageOutputRowOneClick.classList.remove('writeMessageOutputRow');
+                writeMessageOutputRowOneClick.classList.add('writeMessageOutputRowHidden');
                 writeMessageOutputUrlOneClick.href = '';
                 writeMessageOutputUrlOneClick.textContent = '';
             }
-
+            // TODO format values non-bold
+            // TODO copy-to-clipboard for all outputs instead of clickable links
             writeMessageInputText.value = '';
             setGlobalState('state-success');
 
