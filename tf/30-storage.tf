@@ -52,22 +52,27 @@ resource "azurerm_storage_blob" "config" {
         {
             "value": "PT5M",
             "label": "5min",
+            "allowOneClick": true
         },
         {
             "value": "PT15M",
             "label": "15min",
+            "allowOneClick": false
         },
         {
             "value": "PT1H",
             "label": "1 Hour",
+            "allowOneClick": false
         },
         {
             "value": "P1D",
             "label": "1 Day",
+            "allowOneClick": false
         },
         {
             "value": "P1W",
             "label": "1 Week",
+            "allowOneClick": false
         }
       ]
     }

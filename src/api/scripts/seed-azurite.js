@@ -32,14 +32,17 @@ const CONFIG_BLOB_DEFAULTS = {
         {
             "value": "PT1M",
             "label": "1min",
+            "allowOneClick": true
         },
         {
             "value": "PT15M",
             "label": "15min",
+            "allowOneClick": false
         },
         {
             "value": "PT1H",
             "label": "1 Hour",
+            "allowOneClick": false
         }
     ],
 };
