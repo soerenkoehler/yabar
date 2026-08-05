@@ -27,10 +27,9 @@ const loadConfig = async () => {
     }
 };
 
-const createLink = (data) => {
-    const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
-    return `${window.location.origin}?${token}`;
-};
+const encodeMessage = (data) => encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
+
+const createMessageLink = (data) => `${window.location.origin}?${data}`;
 
 const copyTextToClipboard = async (text) => {
     if (!text) {
@@ -67,7 +66,7 @@ const renderExpirationOptions = (selectElement, options) => {
     for (const option of options) {
         const optionElement = document.createElement('option');
         optionElement.value = String(option.value);
-        const label = `${String(option.label)}${option.allowOneClick?' (one click enabled)':''}`
+        const label = `${String(option.label)}${option.allowOneClick ? ' (one click enabled)' : ''}`
         optionElement.textContent = label;
         selectElement.appendChild(optionElement);
     }
@@ -102,7 +101,8 @@ const initPage = async () => {
         writeMessageOutputMessageId,
         writeMessageOutputTwoStepKey,
         writeMessageOutputUrlTwoStep,
-        writeMessageOutputUrlOneClick
+        writeMessageOutputUrlOneClick,
+        readMessageOutput
     ]) {
         enableClickToCopy(outputElement);
     }
@@ -244,25 +244,21 @@ const initPage = async () => {
             const id = await apiClient(config.api_hostname).write(expiration, writeMessageInputText.value);
             const key = crypto.randomUUID(); // TODO use for encryption
 
-            writeMessageOutputMessageId.textContent = id;
-
-            writeMessageOutputUrlTwoStep.textContent = createLink({
-                expiration, id
-            });
-
+            const messageData = encodeMessage({ expiration, id });
+            writeMessageOutputMessageId.textContent = messageData;
             writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key);
+            writeMessageOutputUrlTwoStep.textContent = createMessageLink(messageData);
 
             if (allowOneClick) {
                 writeMessageOutputRowOneClick.classList.remove('writeMessageOutputRowHidden');
-                writeMessageOutputUrlOneClick.textContent = createLink({
+                writeMessageOutputUrlOneClick.textContent = createMessageLink(encodeMessage({
                     expiration, id, key
-                });
+                }));
             } else {
                 writeMessageOutputRowOneClick.classList.add('writeMessageOutputRowHidden');
                 writeMessageOutputUrlOneClick.textContent = '';
             }
-            // TODO format values non-bold
-            // TODO copy-to-clipboard for all outputs instead of clickable links
+
             writeMessageInputText.value = '';
             setGlobalState('state-success');
 

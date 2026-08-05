@@ -186,13 +186,34 @@
 
         .writeMessageOutputValue {
             min-width: 0;
-            word-break: break-word;
-            overflow-wrap: anywhere;
+            display: inline-block;
+            max-width: min(70vw, 42rem);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .writeMessageOutputCopy {
+        .clickToCopy {
             cursor: pointer;
             user-select: all;
+        }
+
+        .clickToCopy::after {
+            content: '';
+            display: inline-block;
+            width: 0.9em;
+            height: 0.9em;
+            margin-left: 0.4em;
+            vertical-align: text-bottom;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.65;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6775' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='13' height='13' rx='2' ry='2'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E");
+            transition: opacity 0.15s ease;
+        }
+
+        .clickToCopy:hover::after {
+            opacity: 1;
         }
 
         #writeMessageOutputRowOneClick {
@@ -312,19 +333,19 @@
                 <div id="writeMessageOutputGrid">
                     <div class="writeMessageOutputRow">
                         <span class="writeMessageOutputLabel">MessageId</span>
-                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputMessageId" title="Click to copy"></span>
+                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputMessageId" title="Click to copy"></span>
                     </div>
                     <div class="writeMessageOutputRow">
                         <span class="writeMessageOutputLabel">Key</span>
-                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputKeyTwoStep" title="Click to copy"></span>
+                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputKeyTwoStep" title="Click to copy"></span>
                     </div>
                     <div class="writeMessageOutputRow">
                         <span class="writeMessageOutputLabel">TwoStep URL</span>
-                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputUrlTwoStep" title="Click to copy"></span>
+                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlTwoStep" title="Click to copy"></span>
                     </div>
                     <div class="writeMessageOutputRow writeMessageOutputRowHidden" id="writeMessageOutputRowOneClick">
                         <span class="writeMessageOutputLabel">OneClick URL</span>
-                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputUrlOneClick" title="Click to copy"></span>
+                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlOneClick" title="Click to copy"></span>
                     </div>
                 </div>
             </div>
@@ -347,7 +368,7 @@
                 <button type="submit" disabled>Show</button>
             </form>
 
-            <div id="readMessageOutput"></div>
+            <div id="readMessageOutput" class="clickToCopy" title="Click to copy"></div>
         </section>
 
         <span id="mainPageStatus"></span>
