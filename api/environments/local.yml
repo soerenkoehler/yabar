@@ -1,12 +1,12 @@
 name: local
 color: "#2E8A54"
 variables:
+  - name: expiration
+    value: PT1M
+    description: ""
   - secret: true
     name: functionapp_host
-    description: ""
   - secret: true
     name: google_client_id
-    description: ""
   - secret: true
     name: google_client_secret
-    description: ""
