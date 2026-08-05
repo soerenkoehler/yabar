@@ -128,6 +128,21 @@ export const getClient = async () => {
         return normalized;
     };
 
+    const countEntities = async (tableClient) => {
+        let totalCount = 0;
+
+        // Fetch page by page while selecting ONLY PartitionKey to minimize network overhead
+        const pagedEntities = tableClient.listEntities({
+            queryOptions: { select: ["PartitionKey"] }
+        }).byPage({ maxPageSize: 1000 });
+
+        for await (const page of pagedEntities) {
+            totalCount += page.length;
+        }
+
+        return totalCount;
+    }
+
     const client = {
         config: async () => {
             return readJsonBlob(CONFIG_BLOB_NAME);
@@ -179,36 +194,32 @@ export const getClient = async () => {
 
             const now = Date.now();
 
+            let beforeCount = 0;
             for await (const entity of messageTable.listEntities()) {
+                beforeCount++;
+
                 const partitionKey = String(entity.partitionKey ?? '');
                 const rowKey = String(entity.rowKey ?? '');
 
-                const deleteAndLog = async () => {
-                    await messageTable.deleteEntity(partitionKey, rowKey);
-                    console.log(`deleted message ${rowKey} from ${partitionKey}`);
-                }
-
-                if (!allowedExpirations.has(partitionKey)) {
-                    await deleteAndLog();
-                    continue;
-                }
-
                 const durationMs = durationByPartition.get(partitionKey);
-                if (durationMs == null) {
-                    await deleteAndLog();
-                    continue;
+                if (durationMs != null) { // valid expiration?
+                    const createdAt = parseTimestampFromRowKey(rowKey);
+                    if (createdAt != null) { // valid timestamp?
+                        const age = now - createdAt.getTime();
+                        if (age <= durationMs) { // not expired?
+                            continue;
+                        }
+                    }
                 }
 
-                const createdAt = parseTimestampFromRowKey(rowKey);
-                if (createdAt == null) {
-                    await deleteAndLog();
-                    continue;
-                }
-
-                if (now - createdAt.getTime() > durationMs) {
-                    await deleteAndLog();
-                }
+                await messageTable.deleteEntity(partitionKey, rowKey);
+                console.log(`> Deleted message ${rowKey} from ${partitionKey}`);
             }
+
+            console.log(`> Messages before cleanup: ${beforeCount}`);
+
+            const afterCount = await countEntities(messageTable);
+            console.log(`> Messages after cleanup: ${afterCount}`);
         }
     };
 
