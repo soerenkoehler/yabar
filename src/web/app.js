@@ -1,6 +1,7 @@
 import { authClient } from './auth.js';
 import { apiClient } from './api.js';
-import { fromSaltedBase64, toSaltedBase64 } from './base64.js'
+import { decryptText, encryptText, generateAESKey } from './aes.js';
+import { saltedBase64ToString, stringToSaltedBase64 } from './base64.js'
 
 let config = {};
 let configLoaded = false;
@@ -27,7 +28,7 @@ const loadConfig = async () => {
     }
 };
 
-const encodeMessage = (data) => encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
+const encodeMessage = (data) => encodeURIComponent(stringToSaltedBase64(JSON.stringify(data)));
 
 const createMessageLink = (data) => `${window.location.origin}?${data}`;
 
@@ -74,8 +75,6 @@ const renderExpirationOptions = (selectElement, options) => {
 
 const initPage = async () => {
     let isAuthenticated = false;
-
-    const topMenu = document.getElementById('topMenu');
 
     const globalState = document.getElementById('globalState');
     const mainPageStatus = document.getElementById('mainPageStatus');
@@ -199,7 +198,7 @@ const initPage = async () => {
         }
 
         try {
-            const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
+            const urlQueryToken = JSON.parse(saltedBase64ToString(readMessageInputMessageId.value));
             if (urlQueryToken?.key) {
                 readMessageInputKey.value = '';
                 readMessageInputKey.disabled = true;
@@ -223,9 +222,9 @@ const initPage = async () => {
         setGlobalState('state-submitting', 'Loading...');
 
         try {
-            const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
+            const urlQueryToken = JSON.parse(saltedBase64ToString(readMessageInputMessageId.value));
             const value = await apiClient(config.api_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
-            readMessageOutput.textContent = value;
+            readMessageOutput.textContent = await decryptText(value, readMessageInputKey.value);
             readMessageInputMessageId.value = ''
             readMessageInputKey.value = ''
             setGlobalState('state-success');
@@ -244,12 +243,13 @@ const initPage = async () => {
             const expirationOption = config.expiration_options.find((option) => String(option.value) === expiration);
             const allowOneClick = expirationOption?.allowOneClick;
 
-            const id = await apiClient(config.api_hostname).write(expiration, writeMessageInputText.value);
-            const key = crypto.randomUUID(); // TODO use for encryption
+            const key = await generateAESKey();
+            const encryptedValue = await encryptText(writeMessageInputText.value, key);
+            const id = await apiClient(config.api_hostname).write(expiration, encryptedValue);
 
             const messageData = encodeMessage({ expiration, id });
             writeMessageOutputMessageId.textContent = messageData;
-            writeMessageOutputTwoStepKey.textContent = toSaltedBase64(key);
+            writeMessageOutputTwoStepKey.textContent = key;
             writeMessageOutputUrlTwoStep.textContent = createMessageLink(messageData);
 
             if (allowOneClick) {
