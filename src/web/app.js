@@ -135,6 +135,7 @@ const initPage = async () => {
             globalState.classList.add(stateClass);
         }
         mainPageStatus.textContent = statusText;
+        updateSubmitButtons();
     };
 
     const setGlobalMode = (modeClass = '') => {
@@ -165,10 +166,11 @@ const initPage = async () => {
         const urlQuery = decodeURIComponent(window.location.search.slice(1));
 
         if (urlQuery) {
+            switchMode('mode-reading');
+            // pre-fill values after mode switch
             readMessageInputMessageId.value = urlQuery;
-            setGlobalMode('mode-reading');
         } else {
-            setGlobalMode('mode-writing');
+            switchMode('mode-writing');
         }
     };
 
@@ -182,7 +184,6 @@ const initPage = async () => {
 
         setGlobalMode(modeClass);
         setGlobalState('state-input');
-        updateSubmitButtons();
     };
 
     const normalizeMessageIdInput = async () => {
@@ -225,6 +226,8 @@ const initPage = async () => {
             const urlQueryToken = JSON.parse(fromSaltedBase64(readMessageInputMessageId.value));
             const value = await apiClient(config.api_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = value;
+            readMessageInputMessageId.value = ''
+            readMessageInputKey.value = ''
             setGlobalState('state-success');
         } catch (error) {
             setGlobalState('state-error', error.message);
@@ -288,7 +291,6 @@ const initPage = async () => {
                 setInitialMode();
                 setModeRestrictions(roles);
                 setGlobalState('state-input');
-                updateSubmitButtons();
             } catch (error) {
                 setGlobalState('state-error', `Could not initialize page: ${error}`);
             }
