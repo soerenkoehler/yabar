@@ -45,7 +45,7 @@ resource "azurerm_function_app_flex_consumption" "api" {
   storage_authentication_type = "SystemAssignedIdentity"
   runtime_name                = "node"
   runtime_version             = "24"
-  maximum_instance_count      = 10
+  maximum_instance_count      = 1
   instance_memory_in_mb       = 512
 
   identity {
