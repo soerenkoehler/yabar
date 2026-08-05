@@ -154,7 +154,10 @@
         #writeMessageOutput,
         #mainPageStatus {
             margin-top: 1rem;
-            font-weight: bold
+        }
+
+        #mainPageStatus {
+            font-weight: bold;
         }
 
         #writeMessageOutputGrid {
@@ -178,13 +181,18 @@
         .writeMessageOutputLabel {
             min-width: 5rem;
             color: #5b6775;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .writeMessageOutputValue {
             min-width: 0;
             word-break: break-word;
             overflow-wrap: anywhere;
+        }
+
+        .writeMessageOutputCopy {
+            cursor: pointer;
+            user-select: all;
         }
 
         #writeMessageOutputRowOneClick {
@@ -303,16 +311,20 @@
             <div id="writeMessageOutput">
                 <div id="writeMessageOutputGrid">
                     <div class="writeMessageOutputRow">
-                        <span class="writeMessageOutputLabel">URL</span>
-                        <a class="writeMessageOutputValue" id="writeMessageOutputUrlTwoStep" href="" target="_blank" rel="noreferrer noopener"></a>
+                        <span class="writeMessageOutputLabel">MessageId</span>
+                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputMessageId" title="Click to copy"></span>
                     </div>
                     <div class="writeMessageOutputRow">
                         <span class="writeMessageOutputLabel">Key</span>
-                        <span class="writeMessageOutputValue" id="writeMessageOutputKeyTwoStep"></span>
+                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputKeyTwoStep" title="Click to copy"></span>
                     </div>
-                    <div class="writeMessageOutputRow" id="writeMessageOutputRowOneClick">
-                        <span class="writeMessageOutputLabel">OneClick</span>
-                        <a class="writeMessageOutputValue" id="writeMessageOutputUrlOneClick" href="" target="_blank" rel="noreferrer noopener"></a>
+                    <div class="writeMessageOutputRow">
+                        <span class="writeMessageOutputLabel">TwoStep URL</span>
+                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputUrlTwoStep" title="Click to copy"></span>
+                    </div>
+                    <div class="writeMessageOutputRow writeMessageOutputRowHidden" id="writeMessageOutputRowOneClick">
+                        <span class="writeMessageOutputLabel">OneClick URL</span>
+                        <span class="writeMessageOutputValue writeMessageOutputCopy" id="writeMessageOutputUrlOneClick" title="Click to copy"></span>
                     </div>
                 </div>
             </div>

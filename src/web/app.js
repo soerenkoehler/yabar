@@ -27,12 +27,38 @@ const loadConfig = async () => {
     }
 };
 
-const createLink = (element, data) => {
+const createLink = (data) => {
     const token = encodeURIComponent(toSaltedBase64(JSON.stringify(data)));
-    const shortToken = token.length > 6 ? `${token.slice(0, 6)}...` : token;
+    return `${window.location.origin}?${token}`;
+};
 
-    element.href = `${window.location.origin}?${token}`;
-    element.textContent = `${window.location.origin}?${shortToken}`;
+const copyTextToClipboard = async (text) => {
+    if (!text) {
+        return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+};
+
+const enableClickToCopy = (element) => {
+    const copy = async () => {
+        await copyTextToClipboard(element.textContent.trim());
+    };
+
+    element.addEventListener('click', () => void copy());
 };
 
 const renderExpirationOptions = (selectElement, options) => {
@@ -66,10 +92,20 @@ const initPage = async () => {
     const writeMessageInputForm = document.getElementById('writeMessageInputForm');
     const writeMessageInputText = document.getElementById('messageInput');
     const writeMessageInputExpiration = document.getElementById('writeMessageInputExpiration');
+    const writeMessageOutputMessageId = document.getElementById('writeMessageOutputMessageId');
     const writeMessageOutputUrlTwoStep = document.getElementById('writeMessageOutputUrlTwoStep');
     const writeMessageOutputTwoStepKey = document.getElementById('writeMessageOutputKeyTwoStep');
     const writeMessageOutputRowOneClick = document.getElementById('writeMessageOutputRowOneClick');
     const writeMessageOutputUrlOneClick = document.getElementById('writeMessageOutputUrlOneClick');
+
+    for (const outputElement of [
+        writeMessageOutputMessageId,
+        writeMessageOutputTwoStepKey,
+        writeMessageOutputUrlTwoStep,
+        writeMessageOutputUrlOneClick
+    ]) {
+        enableClickToCopy(outputElement);
+    }
 
     const updateSubmitButtons = () => {
         for (const form of [readMessageInputForm, writeMessageInputForm]) {
@@ -208,7 +244,9 @@ const initPage = async () => {
             const id = await apiClient(config.api_hostname).write(expiration, writeMessageInputText.value);
             const key = crypto.randomUUID(); // TODO use for encryption
 
-            createLink(writeMessageOutputUrlTwoStep, {
+            writeMessageOutputMessageId.textContent = id;
+
+            writeMessageOutputUrlTwoStep.textContent = createLink({
                 expiration, id
             });
 
@@ -216,14 +254,11 @@ const initPage = async () => {
 
             if (allowOneClick) {
                 writeMessageOutputRowOneClick.classList.remove('writeMessageOutputRowHidden');
-                writeMessageOutputRowOneClick.classList.add('writeMessageOutputRow');
-                createLink(writeMessageOutputUrlOneClick, {
+                writeMessageOutputUrlOneClick.textContent = createLink({
                     expiration, id, key
                 });
             } else {
-                writeMessageOutputRowOneClick.classList.remove('writeMessageOutputRow');
                 writeMessageOutputRowOneClick.classList.add('writeMessageOutputRowHidden');
-                writeMessageOutputUrlOneClick.href = '';
                 writeMessageOutputUrlOneClick.textContent = '';
             }
             // TODO format values non-bold
