@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------
 
 resource "azurerm_log_analytics_workspace" "logAnalyticsWorkspace" {
-  name                = var.project_global_prefix
+  name                = local.base_name
   resource_group_name = data.azurerm_resource_group.sharepass.name
   location            = data.azurerm_resource_group.sharepass.location
   sku                 = "PerGB2018"
@@ -11,7 +11,7 @@ resource "azurerm_log_analytics_workspace" "logAnalyticsWorkspace" {
 }
 
 resource "azurerm_application_insights" "appInsights" {
-  name                = var.project_global_prefix
+  name                = local.base_name
   resource_group_name = data.azurerm_resource_group.sharepass.name
   location            = data.azurerm_resource_group.sharepass.location
   application_type    = "web"
@@ -36,7 +36,7 @@ locals {
 }
 
 resource "azurerm_function_app_flex_consumption" "api" {
-  name                        = var.project_global_prefix
+  name                        = local.base_name
   resource_group_name         = data.azurerm_resource_group.sharepass.name
   location                    = data.azurerm_resource_group.sharepass.location
   service_plan_id             = azurerm_service_plan.api.id
