@@ -3,7 +3,6 @@ color: "#C77A0F"
 variables:
   - name: expiration
     value: PT15M
-    description: ""
   - secret: true
     name: functionapp_host
   - secret: true
