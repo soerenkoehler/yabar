@@ -42,7 +42,6 @@ jobs:
         run: |
           tofu plan \
             -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
-            -var="project_global_prefix=${{ vars.PROJECT_GLOBAL_PREFIX }}" \
             -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
             -var="auth_google_client_id=${{ secrets.AUTH_GOOGLE_CLIENT_ID }}" \
             -out=./plan.out
@@ -77,12 +76,6 @@ jobs:
         run: ./deploy/api-deploy.sh
         env:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
-
-      # - name: Deploy Azure Functions
-      #   uses: Azure/functions-action@v1
-      #   with:
-      #     app-name: ${{ vars.PROJECT_GLOBAL_PREFIX }}
-      #     package: ./src/api
 
       - name: Deploy Static Web App
         run: ./deploy/swa-deploy.sh
