@@ -11,21 +11,16 @@ const loadConfig = async () => {
         return;
     }
 
-    try {
-        const response = await fetch('/config.json', { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`Failed to load config.json (${response.status})`);
-        }
-        config = await response.json();
-
-        const backendConfig = await apiClient(config.api_hostname).config();
-        config = { ...config, ...backendConfig };
-
-        configLoaded = true;
-    } catch (error) {
-        console.error('Could not load config', error);
-        config = {};
+    const response = await fetch('/config.json', { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`Failed to load config.json (${response.status})`);
     }
+    config = await response.json();
+
+    const backendConfig = await apiClient(config.api_hostname).config();
+    config = { ...config, ...backendConfig };
+
+    configLoaded = true;
 };
 
 const encodeMessage = (data) => encodeURIComponent(stringToSaltedBase64(JSON.stringify(data)));
@@ -125,9 +120,11 @@ const initPage = async () => {
     const setGlobalState = (stateClass = '', statusText = '') => {
         globalState.classList.remove(
             'state-idle',
+            'state-loading',
             'state-input',
             'state-submitting',
             'state-error',
+            'state-fatal',
             'state-success'
         );
         if (stateClass) {
@@ -275,24 +272,26 @@ const initPage = async () => {
         }
     };
 
+    setGlobalState('state-loading', 'Loading...');
     try {
         await loadConfig();
     } catch (error) {
-        setGlobalState('state-error', `Could not load config: ${error}`);
+        setGlobalState('state-fatal', `Could not load config: ${error}`);
         return;
     }
 
     authClient(config.auth_google_client_id, async ({ isLoggedIn }) => {
-        setGlobalState('state-idle');
         setAuthenticated(isLoggedIn);
+        setGlobalState('state-idle');
         if (isLoggedIn) {
             try {
+                setGlobalState('state-loading', 'Loading...');
                 const { roles = [] } = await apiClient(config.api_hostname).roles();
                 setInitialMode();
                 setModeRestrictions(roles);
                 setGlobalState('state-input');
             } catch (error) {
-                setGlobalState('state-error', `Could not initialize page: ${error}`);
+                setGlobalState('state-fatal', `Could not initialize page: ${error}`);
             }
         }
     });

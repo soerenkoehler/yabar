@@ -276,26 +276,33 @@
         .state-idle #mainPageStatus,
         .state-idle #readMessageSection,
         .state-idle #writeMessageSection,
+        .state-loading #readMessageSection,
+        .state-loading #writeMessageSection,
         .state-input #readMessageOutput,
         .state-input #writeMessageOutput,
         .state-submitting #readMessageOutput,
         .state-submitting #writeMessageOutput,
         .state-error #readMessageOutput,
         .state-error #writeMessageOutput,
+        .state-fatal #readMessageSection,
+        .state-fatal #writeMessageSection,
         .state-success #mainPageStatus {
             display: none
         }
 
+        .state-loading #mainPageStatus,
         .state-input .mode-reading #readMessageSection,
         .state-input .mode-writing #writeMessageSection,
         .state-submitting #mainPageStatus,
         .state-error #mainPageStatus,
+        .state-fatal #mainPageStatus,
         .state-success #readMessageOutput,
         .state-success #writeMessageOutput {
             display: block
         }
 
-        .state-error #mainPageStatus {
+        .state-error #mainPageStatus,
+        .state-fatal #mainPageStatus {
             color: red
         }
     </style>
@@ -305,9 +312,9 @@
 <body id="globalState" class="state-idle auth-logged-out">
     <h2>Sharepass</h2>
     <div id="topMenu">
-        <div id="topMenuMain" role="tablist" aria-label="Message mode selector">
-            <button id="topMenuModeWrite" type="button" role="tab" aria-selected="false" aria-controls="writeMessageSection">New Message</button>
-            <button id="topMenuModeRead" type="button" role="tab" aria-selected="false" aria-controls="readMessageSection">Read Message</button>
+        <div id="topMenuMain">
+            <button id="topMenuModeWrite" type="button">New Message</button>
+            <button id="topMenuModeRead" type="button">Read Message</button>
         </div>
         <div id="topMenuLogin">
             <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
