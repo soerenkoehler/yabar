@@ -72,6 +72,7 @@ resource "azurerm_function_app_flex_consumption" "backend" {
   lifecycle {
     ignore_changes = [
       app_settings["AzureWebJobsStorage"],
+      site_config[0].cors[0].allowed_origins,
       tags["hidden-link: /app-insights-resource-id"],
     ]
   }

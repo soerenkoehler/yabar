@@ -13,6 +13,12 @@ resource "azurerm_static_web_app" "swa" {
   app_settings = {
     "backend_hostname": "https://${local.base_name}.azurewebsites.net"
   }
+
+  lifecycle {
+    ignore_changes = [
+      app_settings["backend_hostname"],
+    ]
+  }
 }
 
 # --------------------------------------------------------------------------

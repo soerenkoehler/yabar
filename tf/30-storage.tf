@@ -79,7 +79,10 @@ resource "azurerm_storage_blob" "config" {
   EOT
 
   lifecycle {
-    ignore_changes = [source_content]
+    ignore_changes = [
+      source_content,
+      content_md5,
+    ]
   }
 }
 
@@ -96,7 +99,10 @@ resource "azurerm_storage_blob" "users" {
   EOT
 
   lifecycle {
-    ignore_changes = [source_content]
+    ignore_changes = [
+      source_content,
+      content_md5,
+    ]
   }
 }
 
