@@ -158,30 +158,6 @@ const initPage = async () => {
         }
     };
 
-    const setInitialMode = () => {
-        const urlQuery = decodeURIComponent(window.location.search.slice(1));
-
-        if (urlQuery) {
-            switchMode('mode-reading');
-            // pre-fill values after mode switch
-            readMessageInputMessageId.value = urlQuery;
-        } else {
-            switchMode('mode-writing');
-        }
-    };
-
-    const switchMode = (modeClass) => {
-        if (!isAuthenticated) {
-            return;
-        }
-
-        readMessageInputForm.reset();
-        writeMessageInputForm.reset();
-
-        setGlobalMode(modeClass);
-        setGlobalState('state-input');
-    };
-
     const normalizeMessageIdInput = async () => {
         const inputValue = readMessageInputMessageId.value.trim();
 
@@ -213,6 +189,31 @@ const initPage = async () => {
         updateSubmitButtons();
     };
 
+    const setInitialMode = () => {
+        const urlQuery = decodeURIComponent(window.location.search.slice(1));
+
+        if (urlQuery) {
+            switchMode('mode-reading');
+            // pre-fill values after mode switch
+            readMessageInputMessageId.value = urlQuery;
+            normalizeMessageIdInput();
+        } else {
+            switchMode('mode-writing');
+        }
+    };
+
+    const switchMode = (modeClass) => {
+        if (!isAuthenticated) {
+            return;
+        }
+
+        readMessageInputForm.reset();
+        writeMessageInputForm.reset();
+
+        setGlobalMode(modeClass);
+        setGlobalState('state-input');
+    };
+
     const submitReadForm = async (event) => {
         event.preventDefault();
 
@@ -221,7 +222,8 @@ const initPage = async () => {
         try {
             const urlQueryToken = JSON.parse(saltedBase64ToString(readMessageInputMessageId.value));
             const value = await apiClient(config.backend_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
-            readMessageOutput.textContent = await decryptText(value, readMessageInputKey.value);
+            const key = urlQueryToken?.key ?? readMessageInputKey.value;
+            readMessageOutput.textContent = await decryptText(value, key);
             readMessageInputMessageId.value = ''
             readMessageInputKey.value = ''
             setGlobalState('state-success');

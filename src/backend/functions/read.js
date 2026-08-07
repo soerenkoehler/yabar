@@ -43,7 +43,7 @@ app.http('read', {
                     throwHttpError(400, error.message);
                 }
                 if (error.message.includes('not found')) {
-                    throwHttpError(404, `Message with id ${id} not found.`);
+                    throwHttpError(404, 'Message not found.');
                 }
                 throw error;
             }
