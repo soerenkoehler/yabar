@@ -3,14 +3,6 @@
 source "./deploy/@get-output.sh"
 
 # --------------------
-# create config file
-# --------------------
-jq -r <<<"$OUTPUT" >./src/web/config.json \
-    '{
-        backend_hostname: "https://\(.backend_hostname.value)"
-    }'
-
-# --------------------
 # set deployment parameter
 # --------------------
 DEPLOYMENT_TOKEN=$(

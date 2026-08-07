@@ -11,13 +11,13 @@ const loadConfig = async () => {
         return;
     }
 
-    const response = await fetch('/config.json', { cache: 'no-store' });
+    const response = await fetch('/api/config', { cache: 'no-store' });
     if (!response.ok) {
-        throw new Error(`Failed to load config.json (${response.status})`);
+        throw new Error(`Failed to load frontend config (${response.status})`);
     }
     config = await response.json();
 
-    const backendConfig = await apiClient(config.api_hostname).config();
+    const backendConfig = await apiClient(config.backend_hostname).config();
     config = { ...config, ...backendConfig };
 
     configLoaded = true;
@@ -220,7 +220,7 @@ const initPage = async () => {
 
         try {
             const urlQueryToken = JSON.parse(saltedBase64ToString(readMessageInputMessageId.value));
-            const value = await apiClient(config.api_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
+            const value = await apiClient(config.backend_hostname).read(urlQueryToken?.expiration, urlQueryToken?.id);
             readMessageOutput.textContent = await decryptText(value, readMessageInputKey.value);
             readMessageInputMessageId.value = ''
             readMessageInputKey.value = ''
@@ -242,7 +242,7 @@ const initPage = async () => {
 
             const key = await generateAESKey();
             const encryptedValue = await encryptText(writeMessageInputText.value, key);
-            const id = await apiClient(config.api_hostname).write(expiration, encryptedValue);
+            const id = await apiClient(config.backend_hostname).write(expiration, encryptedValue);
 
             const messageData = encodeMessage({ expiration, id });
             writeMessageOutputMessageId.textContent = messageData;
@@ -286,7 +286,7 @@ const initPage = async () => {
         if (isLoggedIn) {
             try {
                 setGlobalState('state-loading', 'Loading...');
-                const { roles = [] } = await apiClient(config.api_hostname).roles();
+                const { roles = [] } = await apiClient(config.backend_hostname).roles();
                 setInitialMode();
                 setModeRestrictions(roles);
                 setGlobalState('state-input');

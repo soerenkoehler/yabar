@@ -9,7 +9,7 @@ const getRequestHeaders = () => {
     } : {};
 };
 
-export const apiClient = (api_hostname) => {
+export const apiClient = (backend_hostname) => {
     if (cached) {
         return cached;
     }
@@ -17,7 +17,7 @@ export const apiClient = (api_hostname) => {
     const client = {
         config: async () => {
             const response = await fetch(
-                `${api_hostname}/api/config`,
+                `${backend_hostname}/api/config`,
                 {
                     method: 'GET'
                 }
@@ -33,7 +33,7 @@ export const apiClient = (api_hostname) => {
 
         roles: async () => {
             const response = await fetch(
-                `${api_hostname}/api/roles`,
+                `${backend_hostname}/api/roles`,
                 {
                     method: 'GET',
                     headers: getRequestHeaders()
@@ -50,7 +50,7 @@ export const apiClient = (api_hostname) => {
 
         read: async (expiration, id) => {
             const response = await fetch(
-                `${api_hostname}/api/read`,
+                `${backend_hostname}/api/read`,
                 {
                     method: 'POST',
                     headers: getRequestHeaders(),
@@ -68,7 +68,7 @@ export const apiClient = (api_hostname) => {
 
         write: async (expiration, value) => {
             const response = await fetch(
-                `${api_hostname}/api/write`,
+                `${backend_hostname}/api/write`,
                 {
                     method: 'POST',
                     headers: getRequestHeaders(),
