@@ -4,16 +4,16 @@
 
 resource "azurerm_log_analytics_workspace" "logAnalyticsWorkspace" {
   name                = local.base_name
-  resource_group_name = data.azurerm_resource_group.sharepass.name
-  location            = data.azurerm_resource_group.sharepass.location
+  resource_group_name = data.azurerm_resource_group.yabar.name
+  location            = data.azurerm_resource_group.yabar.location
   sku                 = "PerGB2018"
   retention_in_days   = 30
 }
 
 resource "azurerm_application_insights" "appInsights" {
   name                = local.base_name
-  resource_group_name = data.azurerm_resource_group.sharepass.name
-  location            = data.azurerm_resource_group.sharepass.location
+  resource_group_name = data.azurerm_resource_group.yabar.name
+  location            = data.azurerm_resource_group.yabar.location
   application_type    = "web"
   workspace_id        = azurerm_log_analytics_workspace.logAnalyticsWorkspace.id
 }
@@ -22,24 +22,24 @@ resource "azurerm_application_insights" "appInsights" {
 # Function App
 # --------------------------------------------------------------------------
 
-resource "azurerm_service_plan" "api" {
+resource "azurerm_service_plan" "backend" {
   name                   = var.project_prefix
-  resource_group_name    = data.azurerm_resource_group.sharepass.name
-  location               = data.azurerm_resource_group.sharepass.location
+  resource_group_name    = data.azurerm_resource_group.yabar.name
+  location               = data.azurerm_resource_group.yabar.location
   sku_name               = "FC1"
   os_type                = "Linux"
   zone_balancing_enabled = false
 }
 
 locals {
-  blobStorageAndContainer = "${azurerm_storage_account.sharepass.primary_blob_endpoint}${azurerm_storage_container.apiDeployment.name}"
+  blobStorageAndContainer = "${azurerm_storage_account.yabar.primary_blob_endpoint}${azurerm_storage_container.backendDeployment.name}"
 }
 
-resource "azurerm_function_app_flex_consumption" "api" {
+resource "azurerm_function_app_flex_consumption" "backend" {
   name                        = local.base_name
-  resource_group_name         = data.azurerm_resource_group.sharepass.name
-  location                    = data.azurerm_resource_group.sharepass.location
-  service_plan_id             = azurerm_service_plan.api.id
+  resource_group_name         = data.azurerm_resource_group.yabar.name
+  location                    = data.azurerm_resource_group.yabar.location
+  service_plan_id             = azurerm_service_plan.backend.id
   storage_container_type      = "blobContainer"
   storage_container_endpoint  = local.blobStorageAndContainer
   storage_authentication_type = "SystemAssignedIdentity"
@@ -64,9 +64,9 @@ resource "azurerm_function_app_flex_consumption" "api" {
 
   app_settings = {
     "AzureWebJobsStorage"              = ""
-    "AzureWebJobsStorage__accountName" = azurerm_storage_account.sharepass.name
-    "TableConnectionString"            = azurerm_storage_account.sharepass.primary_table_endpoint
-    "BlobConnectionString"             = azurerm_storage_account.sharepass.primary_blob_endpoint
+    "AzureWebJobsStorage__accountName" = azurerm_storage_account.yabar.name
+    "TableConnectionString"            = azurerm_storage_account.yabar.primary_table_endpoint
+    "BlobConnectionString"             = azurerm_storage_account.yabar.primary_blob_endpoint
   }
 
   lifecycle {
@@ -81,18 +81,18 @@ resource "azurerm_function_app_flex_consumption" "api" {
 # Role Assignment
 # --------------------------------------------------------------------------
 
-resource "azurerm_role_assignment" "api_blob_contributor" {
-  scope                = azurerm_storage_account.sharepass.id
+resource "azurerm_role_assignment" "backend_blob_contributor" {
+  scope                = azurerm_storage_account.yabar.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azurerm_function_app_flex_consumption.api.identity.0.principal_id
+  principal_id         = azurerm_function_app_flex_consumption.backend.identity.0.principal_id
   principal_type       = "ServicePrincipal"
 }
 
 # Role for table data access (managed identity)
-resource "azurerm_role_assignment" "api_table_data_contributor" {
-  scope                = azurerm_storage_account.sharepass.id
+resource "azurerm_role_assignment" "backend_table_data_contributor" {
+  scope                = azurerm_storage_account.yabar.id
   role_definition_name = "Storage Table Data Contributor"
-  principal_id         = azurerm_function_app_flex_consumption.api.identity.0.principal_id
+  principal_id         = azurerm_function_app_flex_consumption.backend.identity.0.principal_id
   principal_type       = "ServicePrincipal"
 }
 
@@ -100,10 +100,10 @@ resource "azurerm_role_assignment" "api_table_data_contributor" {
 # Outputs
 # --------------------------------------------------------------------------
 
-output "api_function_name" {
-  value = azurerm_function_app_flex_consumption.api.name
+output "backend_function_name" {
+  value = azurerm_function_app_flex_consumption.backend.name
 }
 
-output "api_hostname" {
-  value = azurerm_function_app_flex_consumption.api.default_hostname
+output "backend_hostname" {
+  value = azurerm_function_app_flex_consumption.backend.default_hostname
 }

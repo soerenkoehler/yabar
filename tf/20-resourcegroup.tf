@@ -2,6 +2,6 @@
 # Resource group
 # --------------------------------------------------------------------------
 
-data "azurerm_resource_group" "sharepass" {
+data "azurerm_resource_group" "yabar" {
   name = "${var.project_resource_group}"
 }

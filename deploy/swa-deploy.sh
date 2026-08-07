@@ -7,7 +7,7 @@ source "./deploy/@get-output.sh"
 # --------------------
 jq -r <<<"$OUTPUT" >./src/web/config.json \
     '{
-        api_hostname: "https://\(.api_hostname.value)"
+        backend_hostname: "https://\(.backend_hostname.value)"
     }'
 
 # --------------------

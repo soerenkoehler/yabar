@@ -1,7 +1,7 @@
 {
-  "name": "sharepass-api",
+  "name": "burn-after-reading-backend",
   "version": "1.0.0",
-  "description": "Sharepass Backend API",
+  "description": "",
   "main": "functions/*.js",
   "type": "module",
   "scripts": {

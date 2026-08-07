@@ -4,14 +4,14 @@
 
 resource "azurerm_static_web_app" "swa" {
   name                = var.project_prefix
-  resource_group_name = data.azurerm_resource_group.sharepass.name
-  location            = data.azurerm_resource_group.sharepass.location
+  resource_group_name = data.azurerm_resource_group.yabar.name
+  location            = data.azurerm_resource_group.yabar.location
 
   sku_tier = "Free"
   sku_size = "Free"
 
   app_settings = {
-    "api_hostname": "https://${local.base_name}.azurewebsites.net"
+    "backend_hostname": "https://${local.base_name}.azurewebsites.net"
   }
 }
 

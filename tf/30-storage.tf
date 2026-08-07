@@ -2,10 +2,10 @@
 # Storage account
 # --------------------------------------------------------------------------
 
-resource "azurerm_storage_account" "sharepass" {
+resource "azurerm_storage_account" "yabar" {
   name                = local.storage_name
-  resource_group_name = data.azurerm_resource_group.sharepass.name
-  location            = data.azurerm_resource_group.sharepass.location
+  resource_group_name = data.azurerm_resource_group.yabar.name
+  location            = data.azurerm_resource_group.yabar.location
 
   account_tier             = "Standard"
   account_replication_type = "LRS"
@@ -25,7 +25,7 @@ resource "azurerm_storage_account" "sharepass" {
 resource "azapi_resource" "messages" {
   type      = "Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01"
   name      = "messages"
-  parent_id = "${azurerm_storage_account.sharepass.id}/tableServices/default"
+  parent_id = "${azurerm_storage_account.yabar.id}/tableServices/default"
   body      = {}
 }
 
@@ -35,7 +35,7 @@ resource "azapi_resource" "messages" {
 
 resource "azurerm_storage_container" "appData" {
   name                  = "appdata"
-  storage_account_id    = azurerm_storage_account.sharepass.id
+  storage_account_id    = azurerm_storage_account.yabar.id
   container_access_type = "private"
 }
 
@@ -106,6 +106,6 @@ resource "azurerm_storage_blob" "users" {
 
 resource "azurerm_storage_container" "apiDeployment" {
   name                  = "deploymentpackage"
-  storage_account_id    = azurerm_storage_account.sharepass.id
+  storage_account_id    = azurerm_storage_account.yabar.id
   container_access_type = "private"
 }

@@ -1,6 +1,6 @@
 {
   "configurations": {
-    "sharepass": {
+    "burn-after-reading": {
       "appLocation": "web",
       "apiLocation": null,
       "outputLocation": ".",

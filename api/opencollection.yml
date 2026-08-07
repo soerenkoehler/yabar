@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: sharepass
+  name: burn-after-reading
 config:
   proxy:
     inherit: true

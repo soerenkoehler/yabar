@@ -73,7 +73,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy Azure Functions
-        run: ./deploy/api-deploy.sh
+        run: ./deploy/backend-deploy.sh
         env:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
