@@ -53,6 +53,8 @@
             --btn-disabled-bg: #e8d8bd;
             --btn-disabled-fg: #8a715f;
             --btn-disabled-border: #c6ab90;
+            --btn-link-fg: #8a4d2f;
+            --btn-link-fg-hover: #6f351f;
         }
 
         #innerBody {
@@ -118,16 +120,16 @@
             --tab-bg: var(--btn-bg);
             --tab-fg: var(--btn-fg);
             --tab-border: #b47b53;
-            --tab-active-bg: var(--btn-bg-strong);
+            --tab-active-bg: #d7a678;
             --tab-active-fg: #2f1b13;
-            --tab-active-border: #8a4d2f;
+            --tab-active-border: #7f4428;
 
             align-items: center;
             padding: 0.25rem;
             gap: 0.25rem;
             border: 1px solid var(--tab-border);
             border-radius: 999px;
-            background: linear-gradient(180deg, #fbeed8 0%, #f0d8b5 100%);
+            background: linear-gradient(180deg, hsl(28, 45%, 78%) 0%, hsl(28, 45%, 82%) 100%);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
@@ -142,9 +144,10 @@
         }
 
         #topMenuMain button:hover {
-            background: linear-gradient(180deg, #fff2dd 0%, var(--btn-hover-bg) 100%);
-            border-color: var(--btn-hover-border);
+            background: linear-gradient(180deg, #f0c89d 0%, #ddaa78 100%);
+            border-color: #9f5c35;
             color: #2f1b13;
+            box-shadow: 0 2px 7px rgba(58, 33, 23, 0.24);
         }
 
         #topMenuMain button:focus-visible {
@@ -154,10 +157,16 @@
         }
 
         #topMenuMain button[aria-selected="true"] {
-            background: linear-gradient(180deg, #f5dfbd 0%, var(--tab-active-bg) 100%);
+            background: linear-gradient(180deg, #e6bb91 0%, var(--tab-active-bg) 100%);
             color: var(--tab-active-fg);
             border-color: var(--tab-active-border);
-            box-shadow: 0 2px 6px rgba(58, 33, 23, 0.2);
+            box-shadow: 0 2px 7px rgba(58, 33, 23, 0.26);
+        }
+
+        #topMenuMain button:disabled {
+            color: #796d64;
+            background: linear-gradient(180deg, #ead8bf 0%, var(--btn-disabled-bg) 100%);
+            border-color: var(--btn-disabled-border);
         }
 
         @media (max-width: 640px) {
@@ -179,6 +188,7 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: bold;
+            color: var(--input-fg);
         }
 
         label:has(input:disabled) {
@@ -301,7 +311,7 @@
 
         .writeMessageOutputLabel {
             min-width: 5rem;
-            color: #5b6775;
+            color: var(--input-fg);
             font-weight: bold;
         }
 
@@ -362,17 +372,17 @@
             border: none;
             background: none;
             padding: 0;
-            color: #1f5d99;
+            color: var(--btn-link-fg);
             font: inherit;
             text-decoration: underline;
         }
 
         .logoutTextButton:hover {
-            color: #174876;
+            color: var(--btn-link-fg-hover);
         }
 
         .logoutTextButton:focus-visible {
-            outline: 2px solid rgba(125, 156, 197, 0.45);
+            outline: 2px solid var(--btn-focus-ring);
             outline-offset: 2px;
             border-radius: 2px;
         }
