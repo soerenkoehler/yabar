@@ -104,7 +104,7 @@ resource "azurerm_storage_blob" "users" {
 # Function App Deployment Container
 # --------------------------------------------------------------------------
 
-resource "azurerm_storage_container" "apiDeployment" {
+resource "azurerm_storage_container" "backendDeployment" {
   name                  = "deploymentpackage"
   storage_account_id    = azurerm_storage_account.yabar.id
   container_access_type = "private"
