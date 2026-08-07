@@ -6,15 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YABAR</title>
     <style>
+        @font-face {
+            font-family: 'Maytra';
+            src: url('./maytra.regular.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        html,
         body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+
             font-family: sans-serif;
-            margin: 2rem;
+        }
+
+        body {
+            background: linear-gradient(135deg, hsl(18, 30%, 55%) 0%,
+                    hsl(28, 45%, 72%) 50%,
+                    hsl(39, 80%, 87%) 100%);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        #innerBody {
+            padding: 2rem;
         }
 
         #pageHeader {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 0rem;
             margin-bottom: 2rem;
         }
 
@@ -24,10 +48,12 @@
         }
 
         #pageHeader h2 {
+            color: #542213;
             margin: 0;
-            font-size: 1.5rem;
-            line-height: 1.2;
-            letter-spacing: 0.05em;
+            font-family: 'Maytra';
+            font-variant: normal;
+            font-size: 2rem;
+            line-height: 1.0;
             max-width: 8ch;
             flex-shrink: 0;
         }
@@ -44,7 +70,7 @@
             #pageHeader h2 {
                 writing-mode: horizontal-tb;
                 transform: none;
-                font-size: 1.25rem;
+                font-size: 1.75rem;
                 max-width: none;
             }
         }
@@ -341,96 +367,104 @@
 
         .state-error #mainPageStatus,
         .state-fatal #mainPageStatus {
-            color: red
+            color: #6B1724
         }
     </style>
     <script type="module" src="./app.js"></script>
 </head>
 
-<body id="globalState" class="state-idle auth-logged-out">
-    <header id="pageHeader">
-        <img src="burn-after-reading-small.png" alt="Burn After Reading"/>
-        <h2>Yet Another Burn After Reading</h2>
-    </header>
-    <div id="topMenu">
-        <div id="topMenuMain">
-            <button id="topMenuModeWrite" type="button">New Message</button>
-            <button id="topMenuModeRead" type="button">Read Message</button>
-        </div>
-        <div id="topMenuLogin">
-            <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
-            <div id="loginButton" class="g_id_signin">
+<body id="globalState" class="state-idle auth-logged-out bonfire-container">
+    <div id="innerBody">
+        <header id="pageHeader">
+            <img src="burn-after-reading-small.png" alt="Burn After Reading" />
+            <h2>Yet Another Burn After Reading</h2>
+        </header>
+        <div id="topMenu">
+            <div id="topMenuMain">
+                <button id="topMenuModeWrite" type="button">New Message</button>
+                <button id="topMenuModeRead" type="button">Read Message</button>
+            </div>
+            <div id="topMenuLogin">
+                <div id="g_id_onload" data-client_id="" data-callback="handleGoogleGsiResponse"></div>
+                <div id="loginButton" class="g_id_signin">
+                </div>
             </div>
         </div>
+
+        <div id="mainPage">
+            <section id="writeMessageSection">
+                <form id="writeMessageInputForm">
+                    <div class="form-group">
+                        <label>Expires In:
+                            <select id="writeMessageInputExpiration" required>
+                                <option value="" disabled selected>Loading options...</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Message Payload:
+                            <input id="messageInput" type="text" required placeholder="Enter text here..." />
+                        </label>
+                    </div>
+                    <button type="submit" disabled>Send</button>
+                </form>
+
+                <div id="writeMessageOutput">
+                    <div id="writeMessageOutputGrid">
+                        <div class="writeMessageOutputRow">
+                            <span class="writeMessageOutputLabel">MessageId</span>
+                            <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputMessageId"
+                                title="Click to copy"></span>
+                        </div>
+                        <div class="writeMessageOutputRow">
+                            <span class="writeMessageOutputLabel">Key</span>
+                            <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputKeyTwoStep"
+                                title="Click to copy"></span>
+                        </div>
+                        <div class="writeMessageOutputRow">
+                            <span class="writeMessageOutputLabel">TwoStep URL</span>
+                            <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlTwoStep"
+                                title="Click to copy"></span>
+                        </div>
+                        <div class="writeMessageOutputRow writeMessageOutputRowHidden"
+                            id="writeMessageOutputRowOneClick">
+                            <span class="writeMessageOutputLabel">OneClick URL</span>
+                            <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlOneClick"
+                                title="Click to copy"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="readMessageSection">
+                <form id="readMessageInputForm">
+                    <div class="form-group">
+                        <label>
+                            Message ID:
+                            <input id="readMessageInputMessageId" type="text" required
+                                placeholder="Enter messageId..." />
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Key:
+                            <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
+                        </label>
+                    </div>
+                    <button type="submit" disabled>Show</button>
+                </form>
+
+                <div id="readMessageOutput" class="clickToCopy" title="Click to copy"></div>
+            </section>
+
+            <span id="mainPageStatus"></span>
+        </div>
+
+        <footer id="pageFooter">
+            <div id="authStatus">Not logged in</div>
+            <button id="logoutButton" class="logoutTextButton" type="button">logout</button>
+        </footer>
     </div>
-
-    <div id="mainPage">
-        <section id="writeMessageSection">
-            <form id="writeMessageInputForm">
-                <div class="form-group">
-                    <label>Expires In:
-                        <select id="writeMessageInputExpiration" required>
-                            <option value="" disabled selected>Loading options...</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Message Payload:
-                        <input id="messageInput" type="text" required placeholder="Enter text here..." />
-                    </label>
-                </div>
-                <button type="submit" disabled>Send</button>
-            </form>
-
-            <div id="writeMessageOutput">
-                <div id="writeMessageOutputGrid">
-                    <div class="writeMessageOutputRow">
-                        <span class="writeMessageOutputLabel">MessageId</span>
-                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputMessageId" title="Click to copy"></span>
-                    </div>
-                    <div class="writeMessageOutputRow">
-                        <span class="writeMessageOutputLabel">Key</span>
-                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputKeyTwoStep" title="Click to copy"></span>
-                    </div>
-                    <div class="writeMessageOutputRow">
-                        <span class="writeMessageOutputLabel">TwoStep URL</span>
-                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlTwoStep" title="Click to copy"></span>
-                    </div>
-                    <div class="writeMessageOutputRow writeMessageOutputRowHidden" id="writeMessageOutputRowOneClick">
-                        <span class="writeMessageOutputLabel">OneClick URL</span>
-                        <span class="writeMessageOutputValue clickToCopy" id="writeMessageOutputUrlOneClick" title="Click to copy"></span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="readMessageSection">
-            <form id="readMessageInputForm">
-                <div class="form-group">
-                    <label>
-                        Message ID:
-                        <input id="readMessageInputMessageId" type="text" required placeholder="Enter messageId..." />
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>
-                        Key:
-                        <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
-                    </label>
-                </div>
-                <button type="submit" disabled>Show</button>
-            </form>
-
-            <div id="readMessageOutput" class="clickToCopy" title="Click to copy"></div>
-        </section>
-
-        <span id="mainPageStatus"></span>
-    </div>
-
-    <footer id="pageFooter">
-        <div id="authStatus">Not logged in</div>
-        <button id="logoutButton" class="logoutTextButton" type="button">logout</button>
-    </footer>
 </body>
 
 </html>
