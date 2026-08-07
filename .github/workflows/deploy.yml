@@ -78,6 +78,6 @@ jobs:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
       - name: Deploy Static Web App
-        run: ./deploy/swa-deploy.sh
+        run: ./deploy/frontend-deploy.sh
         env:
           AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
