@@ -180,10 +180,6 @@
             }
         }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
         label {
             display: block;
             margin-bottom: 0.5rem;
@@ -191,27 +187,27 @@
             color: var(--input-fg);
         }
 
-        .form-group label {
+        label.form-field {
             display: grid;
-            grid-template-columns: minmax(8rem, auto) minmax(0, 1fr);
+            grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
             align-items: center;
             column-gap: 0.75rem;
             row-gap: 0.35rem;
-            margin-bottom: 0;
+            margin-bottom: 1rem;
         }
 
-        .form-group.form-group-multiline label {
+        label.form-field-multiline {
             align-items: flex-start;
         }
 
-        .form-group label input,
-        .form-group label textarea,
-        .form-group label select {
+        label.form-field input,
+        label.form-field textarea,
+        label.form-field select {
             width: 100%;
         }
 
         @media (max-width: 640px) {
-            .form-group>label {
+            label.form-field {
                 grid-template-columns: 1fr;
             }
         }
@@ -497,18 +493,14 @@
         <div id="mainPage">
             <section id="writeMessageSection">
                 <form id="writeMessageInputForm">
-                    <div class="form-group">
-                        <label>Expires In:
-                            <select id="writeMessageInputExpiration" required>
-                                <option value="" disabled selected>Loading options...</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div class="form-group form-group-multiline">
-                        <label>Message:
-                            <textarea id="messageInput" required placeholder="Enter text here..."></textarea>
-                        </label>
-                    </div>
+                    <label class="form-field">Expires In:
+                        <select id="writeMessageInputExpiration" required>
+                            <option value="" disabled selected>Loading options...</option>
+                        </select>
+                    </label>
+                    <label class="form-field form-field-multiline">Message:
+                        <textarea id="messageInput" required placeholder="Enter text here..."></textarea>
+                    </label>
                     <button type="submit" disabled>Send</button>
                 </form>
 
@@ -541,19 +533,15 @@
 
             <section id="readMessageSection">
                 <form id="readMessageInputForm">
-                    <div class="form-group">
-                        <label>
-                            Message ID:
-                            <input id="readMessageInputMessageId" type="text" required
-                                placeholder="Enter messageId..." />
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            Key:
-                            <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
-                        </label>
-                    </div>
+                    <label class="form-field">
+                        Message ID:
+                        <input id="readMessageInputMessageId" type="text" required
+                            placeholder="Enter messageId..." />
+                    </label>
+                    <label class="form-field">
+                        Key:
+                        <input id="readMessageInputKey" type="password" placeholder="Enter key..." />
+                    </label>
                     <button type="submit" disabled>Show</button>
                 </form>
 
