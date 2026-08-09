@@ -1,14 +1,26 @@
 {
-  "routes": [
-    {
-      "route": "/api/config",
-      "headers": {
-        "Cache-Control": "no-store"
-      }
+    "routes": [
+        {
+            "route": "/api/config",
+            "headers": {
+                "Cache-Control": "no-store"
+            }
+        },
+        {
+            "route": "/service-worker.js",
+            "headers": {
+                "Cache-Control": "no-cache"
+            }
+        }
+    ],
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/api/*",
+            "/icons/*",
+            "/manifest.webmanifest",
+            "/service-worker.js",
+            "/offline.html"
+        ]
     }
-  ],
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/api/*"]
-  }
 }

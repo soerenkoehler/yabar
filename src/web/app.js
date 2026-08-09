@@ -309,4 +309,17 @@ const initPage = async () => {
     renderExpirationOptions(writeMessageInputExpiration, config.expiration_options);
 }
 
+const registerServiceWorker = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return;
+    }
+
+    try {
+        await navigator.serviceWorker.register('/service-worker.js');
+    } catch (error) {
+        console.error('Service worker registration failed:', error);
+    }
+};
+
 window.addEventListener('DOMContentLoaded', initPage);
+window.addEventListener('DOMContentLoaded', registerServiceWorker);
