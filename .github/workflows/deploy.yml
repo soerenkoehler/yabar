@@ -5,6 +5,13 @@ on:
     branches:
       - main
       - dev
+    paths-ignore:
+      - api/**
+      - artwork/**
+      - src/backend/scripts/**
+      - LICENSE
+      - README.md
+      - yabar.code-workspace
 
 permissions:
   id-token: write
