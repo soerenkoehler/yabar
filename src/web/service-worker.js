@@ -49,6 +49,31 @@ const isSameOriginStaticAsset = (request) => {
 };
 
 self.addEventListener('fetch', (event) => {
+    // Intercept Google GSI credential POST from redirect-mode sign-in (PWA standalone).
+    // When GSI redirects back after authentication it POSTs `credential` as form data to
+    // the login_uri (our origin). We extract the credential and convert it into a GET
+    // redirect with the token in the URL hash so the SPA can consume it without a server.
+    if (event.request.method === 'POST' && event.request.mode === 'navigate') {
+        const url = new URL(event.request.url);
+        if (url.origin === self.location.origin) {
+            event.respondWith((async () => {
+                try {
+                    const formData = await event.request.formData();
+                    const credential = formData.get('credential');
+                    if (credential) {
+                        const redirectTo = new URL('/', self.location.origin);
+                        redirectTo.hash = `gsi_credential=${encodeURIComponent(credential)}`;
+                        return Response.redirect(redirectTo.href, 303);
+                    }
+                } catch {
+                    // fall through to network
+                }
+                return fetch(event.request);
+            })());
+            return;
+        }
+    }
+
     if (event.request.method !== 'GET') {
         return;
     }

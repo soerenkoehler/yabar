@@ -21,12 +21,6 @@ const notifyAuthStateChanged = () => {
     });
 };
 
-const parseJwt = (token) => JSON.parse(
-    new TextDecoder().decode(
-        Uint8Array.fromBase64(token.split('.')[1], { alphabet: 'base64url' })
-    )
-);
-
 const setAuthButtonVisibility = (isLoggedIn) => {
     if (loginButton) {
         loginButton.style.display = isLoggedIn ? 'none' : '';
@@ -51,6 +45,12 @@ const setLoggedOut = () => {
     currentIdToken = null;
     notifyAuthStateChanged();
 };
+
+const parseJwt = (token) => JSON.parse(
+    new TextDecoder().decode(
+        Uint8Array.fromBase64(token.split('.')[1], { alphabet: 'base64url' })
+    )
+);
 
 // must be global for data-callback='handleCredentialResponse'
 window.handleGoogleGsiResponse = async (response) => {
@@ -84,11 +84,38 @@ const loadGoogleGsiScript = () => {
     });
 };
 
+// True when running as an installed PWA (standalone display mode).
+// In this mode window.open() for external origins opens in the system browser, which
+// breaks the GSI popup flow (window.opener is null → postMessage never arrives).
+const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true; // iOS Safari
+
+// After a GSI redirect-mode sign-in the service worker converts the POST response into
+// a 303 GET redirect to /#gsi_credential=<token>. Pick that up, fire the normal
+// credential handler, and clean the hash so it doesn't linger in history.
+const consumeHashCredential = () => {
+    const match = window.location.hash.match(/[#&]gsi_credential=([^&]*)/);
+    if (!match) {
+        return;
+    }
+    const credential = decodeURIComponent(match[1]);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    window.handleGoogleGsiResponse({ credential });
+};
+
 export const authClient = (client_id, listener) => {
     if (loginDataBinder.getAttribute(loginDataBinderClientId).trim().length > 0) {
         return;
     }
     loginDataBinder.setAttribute(loginDataBinderClientId, `${client_id || ''}`);
+
+    // In standalone PWA mode switch to redirect UX so the sign-in flow stays within
+    // the PWA window instead of opening an external popup that loses window.opener.
+    if (isStandalone()) {
+        loginDataBinder.setAttribute('data-ux_mode', 'redirect');
+        loginDataBinder.setAttribute('data-login_uri', `${window.location.origin}/`);
+    }
 
     loadGoogleGsiScript();
 
@@ -108,4 +135,5 @@ export const authClient = (client_id, listener) => {
 
     authStateChangedListener = listener;
     notifyAuthStateChanged();
+    consumeHashCredential();
 }
