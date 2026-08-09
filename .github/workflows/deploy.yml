@@ -67,7 +67,7 @@ jobs:
           node-version: 24
 
       - name: Install Function Core Tools
-        run: npm install -g azure-functions-core-tools@4
+        run: npm install -g azure-functions-core-tools@4.13.0
 
       - name: Install SWA Cli
         run: npm install -g @azure/static-web-apps-cli
