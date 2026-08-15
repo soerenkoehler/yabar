@@ -1,0 +1,11 @@
+{
+  "configurations": {
+    "burn-after-reading": {
+      "appLocation": "web",
+      "apiLocation": "frontend",
+      "apiPort": 7070,
+      "outputLocation": ".",
+      "env": "production"
+    }
+  }
+}

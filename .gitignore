@@ -1,0 +1,12 @@
+node_modules/
+__*storage__/
+__azurite*__.json
+AzuriteConfig
+
+.terraform*
+
+*.zip
+*.generated.js
+src/web/config.json
+src/backend/scripts/users.json
+src/backend/scripts/config.json

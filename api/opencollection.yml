@@ -1,0 +1,43 @@
+opencollection: 1.0.0
+
+info:
+  name: burn-after-reading
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: oauth2
+    flow: authorization_code
+    authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
+    accessTokenUrl: https://oauth2.googleapis.com/token
+    callbackUrl: https://oauth.usebruno.com/callback
+    credentials:
+      clientId: "{{google_client_id}}"
+      clientSecret: "{{google_client_secret}}"
+      placement: body
+    scope: email
+    pkce: {}
+    tokenConfig:
+      id: credentials
+      placement:
+        header: Bearer
+      source: id_token
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: false
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

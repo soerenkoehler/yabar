@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - api/**
+      - artwork/**
+      - src/backend/scripts/**
+      - LICENSE
+      - README.md
+      - yabar.code-workspace
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: "true"
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v6
+
+      - name: TF setup
+        uses: opentofu/setup-opentofu@v2
+        with:
+          tofu_version: 1.12.0
+
+      - name: TF Initialize
+        run: |
+          tofu init \
+            -backend-config="resource_group_name=${{ vars.TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"\
+            -backend-config="use_azuread_auth=true"
+        working-directory: ./tf
+
+      - name: TF Plan
+        run: |
+          tofu plan \
+            -var="project_prefix=${{ vars.PROJECT_PREFIX }}" \
+            -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
+            -var="auth_google_client_id=${{ secrets.AUTH_GOOGLE_CLIENT_ID }}" \
+            -out=./plan.out
+        working-directory: ./tf
+
+      - name: TF Apply
+        run: |
+          tofu apply \
+            -auto-approve \
+            ./plan.out
+        working-directory: ./tf
+
+      - name: Node Setup
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install Function Core Tools
+        run: npm install -g azure-functions-core-tools@4.13.0
+
+      - name: Install SWA Cli
+        run: npm install -g @azure/static-web-apps-cli
+
+      - name: Log in to Azure via OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Azure Functions
+        run: ./deploy/backend-deploy.sh
+        env:
+          PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
+
+      - name: Deploy Static Web App
+        run: ./deploy/frontend-deploy.sh
+        env:
+          AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}

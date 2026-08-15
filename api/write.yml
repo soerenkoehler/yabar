@@ -1,0 +1,33 @@
+info:
+  name: write
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{functionapp_host}}/api/write"
+  body:
+    type: json
+    data: |-
+      {
+        "expiration": "{{expiration}}",
+        "value": "test"
+      }
+  auth: inherit
+
+runtime:
+  actions:
+    - type: set-variable
+      phase: after-response
+      selector:
+        expression: res.body
+        method: jsonq
+      variable:
+        name: messageId
+        scope: runtime
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

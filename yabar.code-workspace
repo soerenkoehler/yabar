@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+    ],
+    "settings": {
+        "telemetry.editStats.enabled": false,
+        "telemetry.feedback.enabled": false,
+        "files.exclude": {
+            "**/.git": true,
+            "**/.terraform*": true,
+            "**/__*storage__": true,
+            "**/__azurite*__.json": true
+        }
+    }
+}

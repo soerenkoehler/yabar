@@ -1,0 +1,22 @@
+{
+    "name": "burn-after-reading-backend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "functions/*.js",
+    "type": "module",
+    "scripts": {
+        "seed:azurite": "node scripts/seed-azurite.js",
+        "predev": "npm install && npm run seed:azurite && npm run prebuild",
+        "dev": "func start --javascript",
+        "prebuild": "TIMESTAMP=$(date +%Y%m%d_%H%M%S) envsubst <./functions/version.template.js >./functions/version.generated.js",
+        "build": "npm install"
+    },
+    "dependencies": {
+        "@azure/data-tables": "^13.0.0",
+        "@azure/functions": "^4.0.0",
+        "@azure/identity": "^4.0.0",
+        "@js-temporal/polyfill": "^0.5.1",
+        "@azure/storage-blob": "~12.29.0",
+        "google-auth-library": "^10.0.0"
+    }
+}

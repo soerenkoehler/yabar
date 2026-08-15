@@ -1,0 +1,11 @@
+{
+    "name": "burn-after-reading-frontend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "**/index.js",
+    "type": "module",
+    "scripts": {
+        "dev": "cd .. && swa start"
+    },
+    "dependencies": {}
+}

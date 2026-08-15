@@ -1,0 +1,11 @@
+name: local
+color: "#2E8A54"
+variables:
+  - name: expiration
+    value: PT1M
+  - secret: true
+    name: functionapp_host
+  - secret: true
+    name: google_client_id
+  - secret: true
+    name: google_client_secret
