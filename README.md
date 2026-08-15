@@ -1,4 +1,4 @@
-![](src/artwork/burn-after-reading-small.png)
+![](artwork/burn-after-reading-small.png)
 
 # YABAR: Yet Another Burn After Reading
 
@@ -9,7 +9,7 @@ tier.
 
 ## Architecture
 
-![](src/artwork/architecture.svg)
+![](artwork/architecture.svg)
 
 ## Manual Preparation: Github Actions
 
