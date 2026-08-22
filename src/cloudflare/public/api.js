@@ -1,0 +1,31 @@
+export const apiClient = () => ({
+    read: async (expiration, id) => {
+        const response = await fetch('/api/read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expiration, id })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error (${response.status}): ${errorText}`);
+        }
+
+        return response.text();
+    },
+
+    write: async (expiration, value) => {
+        const response = await fetch('/api/write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expiration, value })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error (${response.status}): ${errorText}`);
+        }
+
+        return response.text();
+    }
+});

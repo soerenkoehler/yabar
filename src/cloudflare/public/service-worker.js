@@ -1,0 +1,80 @@
+const CACHE_NAME = 'yabar-cloudflare-pwa-v1';
+
+const CORE_ASSETS = [
+    '/',
+    '/index.html',
+    '/app.js',
+    '/api.js',
+    '/aes.js',
+    '/base64.js',
+    '/manifest.webmanifest',
+    '/offline.html',
+    '/burn-after-reading-small.png',
+    '/maytra.regular.woff2',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png'
+];
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
+    );
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keys) => Promise.all(
+            keys
+                .filter((key) => key !== CACHE_NAME)
+                .map((key) => caches.delete(key))
+        ))
+    );
+    self.clients.claim();
+});
+
+const isSameOriginStaticAsset = (request) => {
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) {
+        return false;
+    }
+
+    return ['script', 'style', 'image', 'font'].includes(request.destination)
+        || url.pathname.endsWith('.webmanifest');
+};
+
+self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
+    if (event.request.mode === 'navigate') {
+        event.respondWith((async () => {
+            try {
+                const networkResponse = await fetch(event.request);
+                const cache = await caches.open(CACHE_NAME);
+                cache.put('/index.html', networkResponse.clone());
+                return networkResponse;
+            } catch {
+                return (await caches.match('/index.html')) || (await caches.match('/offline.html'));
+            }
+        })());
+        return;
+    }
+
+    if (!isSameOriginStaticAsset(event.request)) {
+        return;
+    }
+
+    event.respondWith((async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        const networkResponse = await fetch(event.request);
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, networkResponse.clone());
+        return networkResponse;
+    })());
+});

@@ -1,0 +1,16 @@
+name = "yabar-api"
+main = "worker/index.js"
+compatibility_date = "2026-08-22"
+
+[vars]
+BUILD_TIMESTAMP = "local"
+EXPIRATION_OPTIONS = "[{\"value\":\"PT5M\",\"label\":\"5min\",\"allowOneClick\":true},{\"value\":\"PT15M\",\"label\":\"15min\",\"allowOneClick\":false},{\"value\":\"PT1H\",\"label\":\"1 Hour\",\"allowOneClick\":false},{\"value\":\"P1D\",\"label\":\"1 Day\",\"allowOneClick\":false},{\"value\":\"P1W\",\"label\":\"1 Week\",\"allowOneClick\":false}]"
+
+[triggers]
+crons = ["* * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yabar"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "../../infrastructure/cloudflare/d1/migrations"

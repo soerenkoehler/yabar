@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source "./deploy/@get-output.sh"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd -- "$SCRIPT_DIR/../../.." && pwd)
+
+source "$SCRIPT_DIR/@get-output.sh"
 
 # --------------------
 # fix AzureWebJobStorage setting for RBAC
@@ -16,7 +19,7 @@ az functionapp config appsettings set \
 # --------------------
 # build functions
 # --------------------
-pushd ./src/backend
+pushd "$REPO_ROOT/src/azure/backend"
 func pack --skip-install # install is done as build step
 
 # --------------------

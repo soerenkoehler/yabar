@@ -4,38 +4,71 @@
 
 ## What is it
 
-A tiny secret sharing tool that can run in the Azure free resp. low consumption
-tier.
+A tiny secret sharing tool that can run in low-cost cloud tiers. The repository
+contains two independent application variants:
+
+* Azure Static Web Apps + Azure Functions + Azure Storage Tables.
+* Cloudflare Pages + Cloudflare Workers + D1.
+
+The variants are intentionally separated for now. Shared code can be extracted
+later after both deployment models are stable.
 
 ## Architecture
 
 ![](artwork/architecture.svg)
 
+## Repository Layout
+
+| Path | Purpose |
+|------|---------|
+| `src/azure/web` | Azure frontend application |
+| `src/azure/frontend` | Azure Static Web Apps frontend config function |
+| `src/azure/backend` | Azure Functions backend |
+| `src/cloudflare` | Cloudflare Pages/Worker application |
+| `infrastructure/azure` | Azure OpenTofu/Terraform and deploy scripts |
+| `infrastructure/cloudflare` | Cloudflare deploy scripts and D1 migrations |
+
 ## Manual Preparation: Github Actions
+
+Set the `INFRA_TARGET` GitHub Actions variable to select what the deploy
+workflow builds:
+
+| Value | Description |
+|-------|-------------|
+| `azure` | Deploy only the Azure variant. This is also the default if unset. |
+| `cloudflare` | Deploy only the Cloudflare variant. |
+| `both` | Deploy both variants. |
 
 ### Github Action Secrets
 
-| Name                  | Description                                           |
-|-----------------------|-------------------------------------------------------|
-| AUTH_GOOGLE_CLIENT_ID | Google Client ID used for the user side OAuth process |
-| AZURE_CLIENT_ID       | Azure app registration used for the Github workflow   |
-| AZURE_SUBSCRIPTION_ID | target Azure subscription                             |
-| AZURE_TENANT_ID       | target Azure tenant                                   |
+| Name                 | Variant | Description                                           |
+|----------------------|---------|-------------------------------------------------------|
+| AUTH_GOOGLE_CLIENT_ID | Azure | Google Client ID used for the user side OAuth process |
+| AZURE_CLIENT_ID | Azure | Azure app registration used for the Github workflow |
+| AZURE_SUBSCRIPTION_ID | Azure | target Azure subscription |
+| AZURE_TENANT_ID | Azure | target Azure tenant |
+| CLOUDFLARE_API_TOKEN | Cloudflare | Cloudflare API token with Pages, Workers, and D1 permissions |
 
 ### Github Action Variables
 
-| Name                    | Description                                         |
-|-------------------------|-----------------------------------------------------|
-| PROJECT_PREFIX          | short name used for resource names                  |
-| PROJECT_RESOURCE_GROUP  | resource group where the app is deployed            |
-| TFSTATE_RESOURCE_GROUP  | resource group where the tfstate storage is located |
-| TFSTATE_STORAGE_ACCOUNT | storage account holding the tfstate container       |
+| Name | Variant | Description |
+|------|---------|-------------|
+| INFRA_TARGET | All | `azure`, `cloudflare`, or `both` |
+| PROJECT_PREFIX | Azure | short name used for resource names |
+| PROJECT_RESOURCE_GROUP | Azure | resource group where the app is deployed |
+| TFSTATE_RESOURCE_GROUP | Azure | resource group where the tfstate storage is located |
+| TFSTATE_STORAGE_ACCOUNT | Azure | storage account holding the tfstate container |
+| CLOUDFLARE_ACCOUNT_ID | Cloudflare | Cloudflare account id |
+| CLOUDFLARE_D1_DATABASE | Cloudflare | D1 database name; defaults to `yabar` in local scripts |
+| CLOUDFLARE_PAGES_PROJECT | Cloudflare | Pages project name; defaults to `yabar` in local scripts |
 
 ## Manual Preparation: Azure
 
 ### Terraform/Tofu
 
 If you don't have one: create a storage account for the tfstate backend.
+
+The Azure OpenTofu/Terraform configuration lives in `infrastructure/azure/tf`.
 
 ### Role Assignements
 
@@ -86,6 +119,29 @@ If you don't have one: create a storage account for the tfstate backend.
     *   For production enter the real URL of the deployed app.
     *   The client secret value is only required, if you test with Bruno or
         other API clients.
+
+    ## Manual Preparation: Cloudflare
+
+    The Cloudflare variant is a separate application in `src/cloudflare`. It does
+    not use Google GSI, `/api/config`, `/api/roles`, bearer tokens, or in-app role
+    handling. The whole application must be protected by a Cloudflare Access policy.
+
+    Create these Cloudflare resources manually before the first deployment:
+
+    1. A Cloudflare Pages project for the static frontend.
+    2. A D1 database bound to the Worker as `DB`.
+    3. A Worker route or equivalent Cloudflare routing so the Pages hostname serves
+      the Worker under `/api/*`. The Cloudflare frontend calls same-origin
+      `/api/write` and `/api/read` directly.
+    4. A Cloudflare Access application/policy that protects both the Pages frontend
+      and the Worker API route.
+
+    Update `src/cloudflare/wrangler.toml` with the real D1 `database_id` before
+    deploying. D1 migrations live in `infrastructure/cloudflare/d1/migrations`.
+
+    The Cloudflare cleanup job uses a Workers scheduled trigger. Cloudflare cron
+    does not run every second, so expired messages may remain until the next
+    scheduled cleanup run.
 
 ## F.A.Q.
 

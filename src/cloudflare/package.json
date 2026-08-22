@@ -1,0 +1,16 @@
+{
+    "name": "yabar-cloudflare",
+    "version": "1.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "wrangler dev",
+        "deploy:worker": "wrangler deploy",
+        "deploy:pages": "wrangler pages deploy public --project-name ${CLOUDFLARE_PAGES_PROJECT:-yabar}",
+        "d1:migrations:local": "wrangler d1 migrations apply ${CLOUDFLARE_D1_DATABASE:-yabar} --local",
+        "d1:migrations:remote": "wrangler d1 migrations apply ${CLOUDFLARE_D1_DATABASE:-yabar} --remote"
+    },
+    "devDependencies": {
+        "wrangler": "^4.0.0"
+    }
+}

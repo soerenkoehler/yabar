@@ -7,6 +7,6 @@ AzuriteConfig
 
 *.zip
 *.generated.js
-src/web/config.json
-src/backend/scripts/users.json
-src/backend/scripts/config.json
+src/azure/web/config.json
+src/azure/backend/scripts/users.json
+src/azure/backend/scripts/config.json
