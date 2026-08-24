@@ -2,6 +2,7 @@ node_modules/
 __*storage__/
 __azurite*__.json
 AzuriteConfig
+.wrangler/
 
 .terraform*
 
