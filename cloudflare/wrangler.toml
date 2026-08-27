@@ -16,5 +16,5 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "yabar"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "__CLOUDFLARE_D1_DATABASE_ID__"
 migrations_dir = "./d1/migrations"

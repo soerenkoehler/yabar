@@ -58,7 +58,7 @@ workflow builds:
 | TFSTATE_RESOURCE_GROUP | Azure | resource group where the tfstate storage is located |
 | TFSTATE_STORAGE_ACCOUNT | Azure | storage account holding the tfstate container |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare | Cloudflare account id |
-| CLOUDFLARE_D1_DATABASE | Cloudflare | D1 database name; defaults to `yabar` in local scripts |
+| CLOUDFLARE_D1_DATABASE_ID | Cloudflare | D1 database ID used by the deployment script |
 
 ## Manual Preparation: Azure
 
@@ -131,9 +131,10 @@ Create these Cloudflare resources manually before the first deployment:
 2. A Cloudflare Access application/policy that protects the Worker endpoint or
    custom domain, including both the frontend and `/api/*`.
 
-Update `cloudflare/wrangler.toml` with the real D1 `database_id` before
-deploying. D1 migrations live in `cloudflare/d1/migrations`. The
-deployment script applies them before deploying the Worker and its assets.
+Set the `CLOUDFLARE_D1_DATABASE_ID` variable to the real D1 database ID before
+deploying. The deployment script injects it into a temporary Wrangler config,
+then applies the D1 migrations before deploying the Worker and its assets. D1
+migrations live in `cloudflare/d1/migrations`.
 
 After verifying the unified Worker deployment, remove the previous Pages project
 and its obsolete routing and Access configuration manually.
