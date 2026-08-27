@@ -8,7 +8,7 @@ A tiny secret sharing tool that can run in low-cost cloud tiers. The repository
 contains two independent application variants:
 
 * Azure Static Web Apps + Azure Functions + Azure Storage Tables.
-* Cloudflare Pages + Cloudflare Workers + D1.
+* Cloudflare Workers with static assets + D1.
 
 The variants are intentionally separated for now. Shared code can be extracted
 later after both deployment models are stable.
@@ -24,7 +24,7 @@ later after both deployment models are stable.
 | `src/azure/web` | Azure frontend application |
 | `src/azure/frontend` | Azure Static Web Apps frontend config function |
 | `src/azure/backend` | Azure Functions backend |
-| `src/cloudflare` | Cloudflare Pages/Worker application |
+| `src/cloudflare` | Cloudflare Worker application and static assets |
 | `infrastructure/azure` | Azure OpenTofu/Terraform and deploy scripts |
 | `infrastructure/cloudflare` | Cloudflare deploy scripts and D1 migrations |
 
@@ -47,7 +47,7 @@ workflow builds:
 | AZURE_CLIENT_ID | Azure | Azure app registration used for the Github workflow |
 | AZURE_SUBSCRIPTION_ID | Azure | target Azure subscription |
 | AZURE_TENANT_ID | Azure | target Azure tenant |
-| CLOUDFLARE_API_TOKEN | Cloudflare | Cloudflare API token with Pages, Workers, and D1 permissions |
+| CLOUDFLARE_API_TOKEN | Cloudflare | Cloudflare API token with Workers and D1 permissions |
 
 ### Github Action Variables
 
@@ -60,7 +60,6 @@ workflow builds:
 | TFSTATE_STORAGE_ACCOUNT | Azure | storage account holding the tfstate container |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare | Cloudflare account id |
 | CLOUDFLARE_D1_DATABASE | Cloudflare | D1 database name; defaults to `yabar` in local scripts |
-| CLOUDFLARE_PAGES_PROJECT | Cloudflare | Pages project name; defaults to `yabar` in local scripts |
 
 ## Manual Preparation: Azure
 
@@ -120,28 +119,29 @@ The Azure OpenTofu/Terraform configuration lives in `infrastructure/azure/tf`.
     *   The client secret value is only required, if you test with Bruno or
         other API clients.
 
-    ## Manual Preparation: Cloudflare
+## Manual Preparation: Cloudflare
 
-    The Cloudflare variant is a separate application in `src/cloudflare`. It does
-    not use Google GSI, `/api/config`, `/api/roles`, bearer tokens, or in-app role
-    handling. The whole application must be protected by a Cloudflare Access policy.
+The Cloudflare variant is a separate application in `src/cloudflare`. One Worker
+deployment contains the API and the static frontend assets from
+`src/cloudflare/public`. It does not use Google GSI, `/api/config`, `/api/roles`,
+bearer tokens, or in-app role handling.
 
-    Create these Cloudflare resources manually before the first deployment:
+Create these Cloudflare resources manually before the first deployment:
 
-    1. A Cloudflare Pages project for the static frontend.
-    2. A D1 database bound to the Worker as `DB`.
-    3. A Worker route or equivalent Cloudflare routing so the Pages hostname serves
-      the Worker under `/api/*`. The Cloudflare frontend calls same-origin
-      `/api/write` and `/api/read` directly.
-    4. A Cloudflare Access application/policy that protects both the Pages frontend
-      and the Worker API route.
+1. A D1 database bound to the Worker as `DB`.
+2. A Cloudflare Access application/policy that protects the Worker endpoint or
+   custom domain, including both the frontend and `/api/*`.
 
-    Update `src/cloudflare/wrangler.toml` with the real D1 `database_id` before
-    deploying. D1 migrations live in `infrastructure/cloudflare/d1/migrations`.
+Update `src/cloudflare/wrangler.toml` with the real D1 `database_id` before
+deploying. D1 migrations live in `infrastructure/cloudflare/d1/migrations`. The
+deployment script applies them before deploying the Worker and its assets.
 
-    The Cloudflare cleanup job uses a Workers scheduled trigger. Cloudflare cron
-    does not run every second, so expired messages may remain until the next
-    scheduled cleanup run.
+After verifying the unified Worker deployment, remove the previous Pages project
+and its obsolete routing and Access configuration manually.
+
+The Cloudflare cleanup job uses a Workers scheduled trigger. Cloudflare cron does
+not run every second, so expired messages may remain until the next scheduled
+cleanup run.
 
 ## F.A.Q.
 

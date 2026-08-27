@@ -4,10 +4,8 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "dev:worker": "wrangler dev",
-        "dev:pages": "wrangler pages dev public",
-        "deploy:worker": "wrangler deploy",
-        "deploy:pages": "wrangler pages deploy public --project-name ${CLOUDFLARE_PAGES_PROJECT:-yabar}",
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy",
         "d1:migrations:local": "wrangler d1 migrations apply ${CLOUDFLARE_D1_DATABASE:-yabar} --local",
         "d1:migrations:remote": "wrangler d1 migrations apply ${CLOUDFLARE_D1_DATABASE:-yabar} --remote"
     },

@@ -97,7 +97,6 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_D1_DATABASE: ${{ vars.CLOUDFLARE_D1_DATABASE }}
-      CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
 
     steps:
       - name: Checkout project
@@ -108,8 +107,5 @@ jobs:
         with:
           node-version: 24
 
-      - name: Deploy Cloudflare Worker and D1
-        run: ./infrastructure/cloudflare/deploy/backend-deploy.sh
-
-      - name: Deploy Cloudflare Pages
-        run: ./infrastructure/cloudflare/deploy/frontend-deploy.sh
+      - name: Deploy Cloudflare application and D1
+        run: ./infrastructure/cloudflare/deploy/deploy.sh
