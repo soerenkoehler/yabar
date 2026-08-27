@@ -17,4 +17,4 @@ run_worker_first = ["/api/*"]
 binding = "DB"
 database_name = "yabar"
 database_id = "00000000-0000-0000-0000-000000000000"
-migrations_dir = "../../infrastructure/cloudflare/d1/migrations"
+migrations_dir = "./d1/migrations"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-REPO_ROOT=$(cd -- "$SCRIPT_DIR/../../.." && pwd)
+REPO_ROOT=$(cd -- "$SCRIPT_DIR/../.." && pwd)
 
 source "$SCRIPT_DIR/@get-output.sh"
 
@@ -15,7 +15,7 @@ DEPLOYMENT_TOKEN=$(
 # --------------------
 # deploy SWA
 # --------------------
-pushd "$REPO_ROOT/src/azure"
+pushd "$REPO_ROOT/azure"
 swa deploy \
     --verbose silly \
     --deployment-token "$DEPLOYMENT_TOKEN"

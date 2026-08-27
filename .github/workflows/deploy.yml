@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - api/**
       - artwork/**
-      - src/azure/backend/scripts/**
+      - azure/backend/scripts/**
       - LICENSE
       - README.md
       - yabar.code-workspace
@@ -44,7 +44,7 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=${{ vars.PROJECT_PREFIX }}.tfstate"\
             -backend-config="use_azuread_auth=true"
-        working-directory: ./infrastructure/azure/tf
+        working-directory: ./azure/tf
 
       - name: TF Plan
         run: |
@@ -53,14 +53,14 @@ jobs:
             -var="project_resource_group=${{ vars.PROJECT_RESOURCE_GROUP }}" \
             -var="auth_google_client_id=${{ secrets.AUTH_GOOGLE_CLIENT_ID }}" \
             -out=./plan.out
-        working-directory: ./infrastructure/azure/tf
+        working-directory: ./azure/tf
 
       - name: TF Apply
         run: |
           tofu apply \
             -auto-approve \
             ./plan.out
-        working-directory: ./infrastructure/azure/tf
+        working-directory: ./azure/tf
 
       - name: Node Setup
         uses: actions/setup-node@v6
@@ -81,12 +81,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy Azure Functions
-        run: ./infrastructure/azure/deploy/backend-deploy.sh
+        run: ./azure/deploy/backend-deploy.sh
         env:
           PROJECT_RESOURCE_GROUP: ${{ vars.PROJECT_RESOURCE_GROUP }}
 
       - name: Deploy Static Web App
-        run: ./infrastructure/azure/deploy/frontend-deploy.sh
+        run: ./azure/deploy/frontend-deploy.sh
         env:
           AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
 
@@ -108,4 +108,4 @@ jobs:
           node-version: 24
 
       - name: Deploy Cloudflare application and D1
-        run: ./infrastructure/cloudflare/deploy/deploy.sh
+        run: ./cloudflare/deploy/deploy.sh

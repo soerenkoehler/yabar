@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-REPO_ROOT=$(cd -- "$SCRIPT_DIR/../../.." && pwd)
+REPO_ROOT=$(cd -- "$SCRIPT_DIR/../.." && pwd)
 
 source "$SCRIPT_DIR/@get-output.sh"
 
@@ -19,7 +19,7 @@ az functionapp config appsettings set \
 # --------------------
 # build functions
 # --------------------
-pushd "$REPO_ROOT/src/azure/backend"
+pushd "$REPO_ROOT/azure/backend"
 func pack --skip-install # install is done as build step
 
 # --------------------

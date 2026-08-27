@@ -21,12 +21,11 @@ later after both deployment models are stable.
 
 | Path | Purpose |
 |------|---------|
-| `src/azure/web` | Azure frontend application |
-| `src/azure/frontend` | Azure Static Web Apps frontend config function |
-| `src/azure/backend` | Azure Functions backend |
-| `src/cloudflare` | Cloudflare Worker application and static assets |
-| `infrastructure/azure` | Azure OpenTofu/Terraform and deploy scripts |
-| `infrastructure/cloudflare` | Cloudflare deploy scripts and D1 migrations |
+| `azure/web` | Azure frontend application |
+| `azure/frontend` | Azure Static Web Apps frontend config function |
+| `azure/backend` | Azure Functions backend |
+| `cloudflare` | Cloudflare Worker application and static assets, deploy scripts, and D1 migrations |
+| `azure` | Azure OpenTofu/Terraform and deploy scripts |
 
 ## Manual Preparation: Github Actions
 
@@ -67,7 +66,7 @@ workflow builds:
 
 If you don't have one: create a storage account for the tfstate backend.
 
-The Azure OpenTofu/Terraform configuration lives in `infrastructure/azure/tf`.
+The Azure OpenTofu/Terraform configuration lives in `azure/tf`.
 
 ### Role Assignements
 
@@ -121,9 +120,9 @@ The Azure OpenTofu/Terraform configuration lives in `infrastructure/azure/tf`.
 
 ## Manual Preparation: Cloudflare
 
-The Cloudflare variant is a separate application in `src/cloudflare`. One Worker
+The Cloudflare variant is a separate application in `cloudflare`. One Worker
 deployment contains the API and the static frontend assets from
-`src/cloudflare/public`. It does not use Google GSI, `/api/config`, `/api/roles`,
+`cloudflare/public`. It does not use Google GSI, `/api/config`, `/api/roles`,
 bearer tokens, or in-app role handling.
 
 Create these Cloudflare resources manually before the first deployment:
@@ -132,8 +131,8 @@ Create these Cloudflare resources manually before the first deployment:
 2. A Cloudflare Access application/policy that protects the Worker endpoint or
    custom domain, including both the frontend and `/api/*`.
 
-Update `src/cloudflare/wrangler.toml` with the real D1 `database_id` before
-deploying. D1 migrations live in `infrastructure/cloudflare/d1/migrations`. The
+Update `cloudflare/wrangler.toml` with the real D1 `database_id` before
+deploying. D1 migrations live in `cloudflare/d1/migrations`. The
 deployment script applies them before deploying the Worker and its assets.
 
 After verifying the unified Worker deployment, remove the previous Pages project
