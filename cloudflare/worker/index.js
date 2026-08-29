@@ -1,11 +1,3 @@
-const DEFAULT_EXPIRATION_OPTIONS = [
-    { value: 'PT5M', label: '5min', allowOneClick: true },
-    { value: 'PT15M', label: '15min', allowOneClick: false },
-    { value: 'PT1H', label: '1 Hour', allowOneClick: false },
-    { value: 'P1D', label: '1 Day', allowOneClick: false },
-    { value: 'P1W', label: '1 Week', allowOneClick: false }
-];
-
 const jsonResponse = (body, init = {}) => new Response(JSON.stringify(body), {
     ...init,
     headers: {
@@ -36,18 +28,14 @@ const parseJsonBody = async (request) => {
     }
 };
 
-const getExpirationOptions = (env) => {
-    if (!env.EXPIRATION_OPTIONS) {
-        return DEFAULT_EXPIRATION_OPTIONS;
+const getConfig = (env) => {
+    if (env.CONFIG && typeof env.CONFIG === 'object' && Array.isArray(env.CONFIG.expirationOptions)) {
+        return env.CONFIG;
     }
-
-    try {
-        const parsed = JSON.parse(env.EXPIRATION_OPTIONS);
-        return Array.isArray(parsed) ? parsed : DEFAULT_EXPIRATION_OPTIONS;
-    } catch {
-        return DEFAULT_EXPIRATION_OPTIONS;
-    }
+    throw httpError(500, 'Bad configuration');
 };
+
+const getExpirationOptions = (env) => getConfig(env).expirationOptions;
 
 const getAllowedExpirations = (env) => new Set(
     getExpirationOptions(env).map((option) => String(option?.value ?? '').trim())
@@ -147,6 +135,10 @@ const routeRequest = async (request, env) => {
 
     if (request.method === 'POST' && url.pathname === '/api/read') {
         return handleRead(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/config') {
+        return jsonResponse(getConfig(env));
     }
 
     if (request.method === 'GET' && url.pathname === '/api/info') {

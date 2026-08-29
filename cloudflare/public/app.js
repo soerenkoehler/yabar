@@ -2,13 +2,7 @@ import { apiClient } from './api.js';
 import { decryptText, encryptText, generateAESKey } from './aes.js';
 import { saltedBase64ToString, stringToSaltedBase64 } from './base64.js';
 
-const expirationOptions = [
-    { value: 'PT5M', label: '5min', allowOneClick: true },
-    { value: 'PT15M', label: '15min', allowOneClick: false },
-    { value: 'PT1H', label: '1 Hour', allowOneClick: false },
-    { value: 'P1D', label: '1 Day', allowOneClick: false },
-    { value: 'P1W', label: '1 Week', allowOneClick: false }
-];
+let config = null;
 
 const encodeMessage = (data) => encodeURIComponent(stringToSaltedBase64(JSON.stringify(data)));
 const createMessageLink = (data) => `${window.location.origin}?${data}`;
@@ -41,7 +35,7 @@ const enableClickToCopy = (element) => {
 const renderExpirationOptions = (selectElement) => {
     selectElement.innerHTML = '';
 
-    for (const option of expirationOptions) {
+    for (const option of config.expirationOptions) {
         const optionElement = document.createElement('option');
         optionElement.value = String(option.value);
         optionElement.textContent = `${String(option.label)}${option.allowOneClick ? ' (one click enabled)' : ''}`;
@@ -51,6 +45,8 @@ const renderExpirationOptions = (selectElement) => {
 
 const initPage = () => {
     const client = apiClient();
+    config = await apiClient().config();
+
     const globalState = document.getElementById('globalState');
     const mainPageStatus = document.getElementById('mainPageStatus');
 
@@ -188,7 +184,7 @@ const initPage = () => {
 
         try {
             const expiration = writeMessageInputExpiration.value;
-            const expirationOption = expirationOptions.find((option) => String(option.value) === expiration);
+            const expirationOption = config.expirationOptions.find((option) => String(option.value) === expiration);
             const allowOneClick = expirationOption?.allowOneClick;
 
             const key = await generateAESKey();
