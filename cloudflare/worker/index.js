@@ -142,7 +142,7 @@ const routeRequest = async (request, env) => {
     }
 
     if (request.method === 'GET' && url.pathname === '/api/info') {
-        return jsonResponse({ build_timestamp: env.BUILD_TIMESTAMP ?? 'unknown'});
+        return jsonResponse({ build_timestamp: env.build_timestamp ?? 'unknown'});
     }
 
     return textResponse('Not found.', { status: 404 });
