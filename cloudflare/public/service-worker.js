@@ -2,15 +2,15 @@ const CACHE_NAME = 'yabar-cloudflare-pwa-v1';
 
 const CORE_ASSETS = [
     '/',
-    '/index.html',
-    '/app.js',
-    '/api.js',
     '/aes.js',
+    '/api.js',
+    '/app.js',
     '/base64.js',
-    '/manifest.webmanifest',
-    '/offline.html',
     '/burn-after-reading-small.png',
+    '/index.html',
+    '/manifest.webmanifest',
     '/maytra.regular.woff2',
+    '/offline.html',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
 ];

@@ -43,7 +43,7 @@ const renderExpirationOptions = (selectElement) => {
     }
 };
 
-const initPage = () => {
+const initPage = async () => {
     const client = apiClient();
     config = await apiClient().config();
 
