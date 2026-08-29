@@ -15,7 +15,7 @@ WRANGLER_CONFIG=$(mktemp "$PWD/wrangler.deploy.XXXXXX.jsonc")
 trap 'rm -f "$WRANGLER_CONFIG"' EXIT
 
 BUILD_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-jq wrangler.jsonc >"$WRANGLER_CONFIG" \
+jq <wrangler.jsonc >"$WRANGLER_CONFIG" \
   --arg database_id "$CLOUDFLARE_D1_DATABASE_ID" \
   --arg build_timestamp "$BUILD_TIMESTAMP" \
   '.d1_databases[0].database_id = $database_id
