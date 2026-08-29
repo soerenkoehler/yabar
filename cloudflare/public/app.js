@@ -231,6 +231,13 @@ const initPage = async () => {
     renderExpirationOptions(writeMessageInputExpiration);
     setGlobalState('state-input');
     setInitialMode();
+
+    try {
+        const info = await client.info();
+        document.getElementById('pageFooterBuildTimestamp').textContent = info.build_timestamp;
+    } catch {
+        // Ignore failures fetching build info; footer stays empty.
+    }
 };
 
 const registerServiceWorker = async () => {

@@ -10,6 +10,17 @@ export const apiClient = () => ({
         return response.json();
     },
 
+    info: async () => {
+        const response = await fetch('/api/info');
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error (${response.status}): ${errorText}`);
+        }
+
+        return response.json();
+    },
+
     read: async (expiration, id) => {
         const response = await fetch('/api/read', {
             method: 'POST',
