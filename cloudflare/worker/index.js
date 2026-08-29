@@ -105,10 +105,7 @@ const handleRead = async (request, env) => {
 };
 
 // FIXME add a once a day function that cleans undefined expiration values
-// TODO test/debug locally
 const cleanupMessages = async (env) => {
-    console.log("cleanup messages");
-
     let deleted = 0;
     const now = Date.now();
 
@@ -126,7 +123,6 @@ const cleanupMessages = async (env) => {
         deleted += result.meta?.changes ?? 0;
     }
 
-    console.log(`deleted: ${deleted}`);
     return deleted;
 };
 
