@@ -29,8 +29,8 @@ const parseJsonBody = async (request) => {
 };
 
 const getConfig = (env) => {
-    if (env.CONFIG && typeof env.CONFIG === 'object' && Array.isArray(env.CONFIG.expirationOptions)) {
-        return env.CONFIG;
+    if (env.config && typeof env.config === 'object' && Array.isArray(env.config.expirationOptions)) {
+        return env.config;
     }
     throw httpError(500, 'Bad configuration');
 };
