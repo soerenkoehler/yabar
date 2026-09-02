@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "$SCRIPT_DIR/../.." && pwd)
 
-pushd "$REPO_ROOT/cloudflare"
+pushd "$REPO_ROOT/src"
 
 if [[ -z "${CLOUDFLARE_D1_DATABASE_ID:-}" ]]; then
   echo "CLOUDFLARE_D1_DATABASE_ID must be set" >&2

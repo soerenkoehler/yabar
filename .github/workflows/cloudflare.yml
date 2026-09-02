@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - cloudflare/**
+      - src/**
       - .github/workflows/cloudflare.yml
 
 permissions:
@@ -30,4 +30,4 @@ jobs:
           node-version: 24
 
       - name: Deploy Cloudflare application and D1
-        run: ./cloudflare/deploy/deploy.sh
+        run: ./src/deploy/deploy.sh

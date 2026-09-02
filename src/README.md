@@ -1,6 +1,6 @@
-# YABAR Cloudflare
+# YABAR Cloudflare Source
 
-This is the currently maintained YABAR implementation.
+This directory contains the Cloudflare application and deployment code.
 
 ## Architecture
 
